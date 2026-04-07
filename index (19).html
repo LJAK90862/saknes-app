@@ -1,0 +1,1096 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Saknes — Latvijas mantojuma karte</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Uncial+Antiqua&display=swap" rel="stylesheet">
+<style>
+:root {
+  --carmine:#9B1B30; --carmine-dark:#6B1020; --carmine-light:#c4344a;
+  --white:#ffffff; --off-white:#FAF8F5; --linen:#F2EDE4;
+  --ink:#1a0a0e; --ink-mid:#3d2028; --ink-light:#7a5560;
+  --gold:#B8832A; --gold-light:#d4a855;
+  --border:#e8ddd5; --border-strong:#d4c0b8;
+  --sidebar-w:300px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:'Crimson Pro',Georgia,serif;background:var(--white);color:var(--ink);min-height:100vh;}
+
+/* ════════════════════════════
+   LANDING PAGE
+════════════════════════════ */
+#page-landing{display:flex;flex-direction:column;min-height:100vh;}
+.site-nav{position:sticky;top:0;z-index:500;background:var(--white);border-bottom:2px solid var(--carmine);display:flex;align-items:stretch;box-shadow:0 2px 12px rgba(0,0,0,.07);}
+.nav-logo{display:flex;align-items:center;gap:12px;padding:0 28px;border-right:1px solid var(--border);cursor:pointer;}
+.nav-logo-rune{font-size:1.4rem;color:var(--carmine);}
+.nav-logo-text{font-family:'Uncial Antiqua',serif;font-size:1.15rem;color:var(--ink);letter-spacing:.06em;}
+.nav-logo-sub{font-size:.55rem;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-light);display:block;margin-top:1px;}
+.nav-tabs{display:flex;align-items:stretch;}
+.nav-tab{background:none;border:none;color:var(--ink-light);padding:0 20px;font-family:'Crimson Pro',serif;font-size:.85rem;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:all .2s;border-bottom:3px solid transparent;margin-bottom:-2px;}
+.nav-tab:hover{color:var(--carmine);}
+.nav-tab.active{color:var(--carmine);border-bottom-color:var(--carmine);font-weight:600;}
+.nav-spacer{flex:1;}
+.nav-auth{display:flex;align-items:center;gap:10px;padding:0 20px;}
+.btn-nav-primary{background:var(--carmine);color:white;border:none;padding:7px 16px;font-family:'Crimson Pro',serif;font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:all .2s;}
+.btn-nav-primary:hover{background:var(--carmine-dark);}
+.btn-nav-ghost{background:none;border:1px solid var(--border);color:var(--ink-light);padding:6px 12px;font-family:'Crimson Pro',serif;font-size:.76rem;cursor:pointer;transition:all .15s;}
+.btn-nav-ghost:hover{border-color:var(--carmine);color:var(--carmine);}
+.nav-user-email{font-size:.72rem;color:var(--ink-light);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+
+.belt{height:12px;background:var(--carmine);position:relative;overflow:hidden;flex-shrink:0;}
+.belt::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0,transparent 7px,rgba(255,255,255,.18) 7px,rgba(255,255,255,.18) 9px,transparent 9px,transparent 16px,rgba(255,255,255,.1) 16px,rgba(255,255,255,.1) 18px,transparent 18px,transparent 28px,rgba(255,255,255,.18) 28px,rgba(255,255,255,.18) 30px);}
+
+/* HERO */
+#section-home{background:var(--off-white);padding:88px 64px 76px;position:relative;overflow:hidden;border-bottom:1px solid var(--border);}
+#section-home::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent,transparent 79px,rgba(155,27,48,.03) 79px,rgba(155,27,48,.03) 80px),repeating-linear-gradient(0deg,transparent,transparent 79px,rgba(155,27,48,.03) 79px,rgba(155,27,48,.03) 80px);pointer-events:none;}
+.hero-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;gap:80px;position:relative;z-index:1;}
+.hero-text{flex:1;}
+.hero-eyebrow{font-size:.68rem;letter-spacing:.28em;text-transform:uppercase;color:var(--carmine);margin-bottom:18px;display:flex;align-items:center;gap:12px;}
+.hero-eyebrow::after{content:'';display:block;height:1px;background:var(--carmine);opacity:.3;flex:0 0 48px;}
+.hero-title{font-family:'IM Fell English',serif;font-size:clamp(2.6rem,4.5vw,4.2rem);color:var(--ink);line-height:1.1;margin-bottom:24px;}
+.hero-title em{font-style:italic;color:var(--carmine);}
+.hero-body{font-size:1.15rem;line-height:1.82;color:var(--ink-mid);font-weight:300;margin-bottom:40px;max-width:500px;}
+.hero-actions{display:flex;gap:14px;flex-wrap:wrap;}
+.btn-primary{background:var(--carmine);color:white;border:none;padding:14px 32px;font-family:'Crimson Pro',serif;font-size:.95rem;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:all .2s;font-weight:600;}
+.btn-primary:hover{background:var(--carmine-dark);transform:translateY(-1px);}
+.btn-secondary{background:white;color:var(--carmine);border:1.5px solid var(--carmine);padding:14px 32px;font-family:'Crimson Pro',serif;font-size:.95rem;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:all .2s;}
+.btn-secondary:hover{background:var(--linen);}
+.hero-visual{flex:0 0 340px;}
+.hero-map-frame{width:100%;height:280px;background:var(--linen);border:1px solid var(--border);position:relative;overflow:hidden;box-shadow:6px 6px 0 var(--border);}
+.hero-map-frame::after{content:'Karte — 1935';position:absolute;bottom:10px;right:10px;font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:var(--carmine);background:rgba(255,255,255,.9);padding:3px 8px;border:1px solid var(--border);}
+.preview-pin{position:absolute;width:11px;height:11px;background:var(--carmine);border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:2px solid white;box-shadow:0 1px 4px rgba(0,0,0,.2);}
+.preview-pin:nth-child(1){top:32%;left:42%}.preview-pin:nth-child(2){top:52%;left:62%;background:var(--gold)}.preview-pin:nth-child(3){top:44%;left:26%}.preview-pin:nth-child(4){top:66%;left:50%}.preview-pin:nth-child(5){top:28%;left:68%;background:var(--gold)}
+.hero-caption{margin-top:12px;font-size:.75rem;color:var(--ink-light);text-align:center;letter-spacing:.04em;}
+
+.stats-bar{background:var(--carmine);display:flex;}
+.stat-item{flex:1;padding:28px 32px;text-align:center;border-right:1px solid rgba(255,255,255,.15);}
+.stat-item:last-child{border-right:none;}
+.stat-num{font-family:'IM Fell English',serif;font-size:2.6rem;color:white;display:block;line-height:1;margin-bottom:5px;}
+.stat-label{font-size:.64rem;text-transform:uppercase;letter-spacing:.18em;color:rgba(255,255,255,.7);}
+
+.section-wrap{padding:80px 64px;}
+.section-wrap.alt{background:var(--off-white);}
+.section-inner{max-width:900px;margin:0 auto;}
+.section-overline{font-size:.62rem;letter-spacing:.25em;text-transform:uppercase;color:var(--carmine);margin-bottom:10px;display:flex;align-items:center;gap:10px;}
+.section-overline::after{content:'';height:1px;background:var(--carmine);opacity:.25;flex:0 0 48px;display:block;}
+.section-title{font-family:'IM Fell English',serif;font-size:clamp(1.8rem,3vw,2.6rem);color:var(--ink);line-height:1.2;margin-bottom:28px;}
+.section-body{font-size:1.1rem;line-height:1.85;color:var(--ink-mid);font-weight:300;}
+.section-body p+p{margin-top:18px;}
+.section-body strong{font-weight:600;color:var(--carmine-dark);}
+.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:48px;padding-top:40px;border-top:1px solid var(--border);}
+.about-card-rune{font-size:1.7rem;margin-bottom:10px;display:block;}
+.about-card-title{font-family:'IM Fell English',serif;font-size:1.2rem;color:var(--carmine-dark);margin-bottom:8px;}
+.about-card-body{font-size:.98rem;line-height:1.75;color:var(--ink-light);font-weight:300;}
+.mission-quote-block{background:var(--carmine);padding:52px 56px;}
+.mission-quote{font-family:'IM Fell English',serif;font-size:clamp(1.4rem,2.2vw,2rem);font-style:italic;color:white;line-height:1.5;margin-bottom:16px;}
+.mission-quote-attr{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.55);}
+.mission-pillars{display:grid;grid-template-columns:repeat(3,1fr);gap:40px;margin-top:48px;}
+.pillar{border-top:2px solid var(--carmine);padding-top:20px;}
+.pillar-num{font-family:'Uncial Antiqua',serif;font-size:2rem;color:var(--carmine);opacity:.5;margin-bottom:8px;}
+.pillar-title{font-family:'IM Fell English',serif;font-size:1.12rem;color:var(--ink);margin-bottom:8px;}
+.pillar-body{font-size:.95rem;line-height:1.75;color:var(--ink-light);font-weight:300;}
+.map-cta{background:var(--linen);border:1px solid var(--border);padding:48px;text-align:center;margin-top:48px;}
+.map-cta-title{font-family:'IM Fell English',serif;font-size:1.7rem;color:var(--ink);margin-bottom:12px;}
+.map-cta-body{font-size:1rem;color:var(--ink-light);margin-bottom:28px;max-width:420px;margin-left:auto;margin-right:auto;line-height:1.7;}
+.site-footer{background:var(--ink);color:rgba(255,255,255,.4);text-align:center;padding:26px;font-size:.72rem;letter-spacing:.08em;}
+.site-footer a{color:rgba(255,255,255,.35);text-decoration:none;}
+
+/* ════════════════════════════
+   MAP APP (fullscreen)
+════════════════════════════ */
+#page-map{display:none;position:fixed;inset:0;z-index:300;flex-direction:column;}
+
+/* Top bar */
+.mapapp-topbar{background:var(--white);border-bottom:2px solid var(--carmine);height:52px;display:flex;align-items:center;padding:0 16px;gap:12px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.06);z-index:10;}
+.mapapp-home{display:flex;align-items:center;gap:8px;cursor:pointer;text-decoration:none;border-right:1px solid var(--border);padding-right:16px;margin-right:4px;}
+.mapapp-home-rune{font-size:1.2rem;color:var(--carmine);}
+.mapapp-home-text{font-family:'Uncial Antiqua',serif;font-size:.95rem;color:var(--ink);letter-spacing:.05em;}
+.mapapp-home-back{font-size:.68rem;color:var(--ink-light);letter-spacing:.06em;text-transform:uppercase;}
+.mapapp-home:hover .mapapp-home-text{color:var(--carmine);}
+
+/* Layer toggle */
+.layer-toggle{display:flex;border:1px solid var(--border);overflow:hidden;flex-shrink:0;}
+.layer-btn{background:var(--off-white);border:none;padding:5px 14px;font-family:'Crimson Pro',serif;font-size:.78rem;cursor:pointer;color:var(--ink-light);transition:all .15s;white-space:nowrap;}
+.layer-btn.active{background:var(--carmine);color:white;font-weight:600;}
+
+/* Family toggle */
+.fam-toggle-wrap{display:flex;align-items:center;gap:7px;flex-shrink:0;}
+.fam-toggle-label{font-size:.7rem;color:var(--ink-light);white-space:nowrap;}
+.fam-toggle-label.active-label{color:var(--carmine);font-weight:600;}
+.toggle-sw{position:relative;width:38px;height:20px;flex-shrink:0;}
+.toggle-sw input{opacity:0;width:0;height:0;}
+.toggle-track{position:absolute;inset:0;background:var(--border-strong);cursor:pointer;transition:.3s;border-radius:20px;}
+.toggle-track:before{content:'';position:absolute;height:14px;width:14px;left:3px;bottom:3px;background:white;transition:.3s;border-radius:50%;}
+input:checked+.toggle-track{background:var(--carmine);}
+input:checked+.toggle-track:before{transform:translateX(18px);}
+
+/* Search */
+.mapapp-search{position:relative;flex-shrink:0;}
+.mapapp-search input{border:1px solid var(--border);background:var(--off-white);color:var(--ink);padding:5px 30px 5px 10px;font-family:'Crimson Pro',serif;font-size:.8rem;width:190px;outline:none;transition:border-color .15s,width .2s;}
+.mapapp-search input:focus{border-color:var(--carmine);width:230px;}
+.mapapp-search-icon{position:absolute;right:8px;top:50%;transform:translateY(-50%);color:var(--ink-light);font-size:.82rem;pointer-events:none;}
+.search-drop{position:absolute;top:calc(100% + 4px);left:0;right:0;background:white;border:1px solid var(--border);box-shadow:0 4px 16px rgba(0,0,0,.12);z-index:2000;max-height:260px;overflow-y:auto;display:none;}
+.search-drop.open{display:block;}
+.search-item{padding:9px 13px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .1s;}
+.search-item:last-child{border-bottom:none;}
+.search-item:hover{background:var(--off-white);}
+.search-item-addr{font-family:'IM Fell English',serif;font-size:.85rem;color:var(--ink);}
+.search-item-meta{font-size:.68rem;color:var(--ink-light);margin-top:1px;}
+.search-no-results{padding:14px;font-size:.8rem;color:var(--ink-light);text-align:center;}
+
+.mapapp-spacer{flex:1;}
+.pin-count{font-size:.7rem;color:var(--ink-light);white-space:nowrap;}
+.btn-add-map{background:var(--carmine);color:white;border:none;padding:6px 14px;font-family:'Crimson Pro',serif;font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;font-weight:600;white-space:nowrap;}
+.btn-add-map:hover{background:var(--carmine-dark);}
+
+/* Map body: sidebar + leaflet */
+.mapapp-body{flex:1;display:flex;overflow:hidden;}
+
+/* ── SIDEBAR ── */
+.sidebar{width:var(--sidebar-w);flex-shrink:0;background:var(--white);border-right:2px solid var(--carmine);display:flex;flex-direction:column;overflow:hidden;}
+
+/* Sidebar top — auth or user info */
+.sidebar-user{padding:16px;border-bottom:1px solid var(--border);background:var(--carmine);display:flex;align-items:center;gap:10px;}
+.sidebar-avatar{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:1rem;color:white;flex-shrink:0;font-family:'IM Fell English',serif;}
+.sidebar-user-name{font-size:.82rem;color:white;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sidebar-user-sub{font-size:.65rem;color:rgba(255,255,255,.65);}
+.sidebar-signin-btn{width:100%;background:white;color:var(--carmine);border:none;padding:10px;font-family:'Crimson Pro',serif;font-size:.82rem;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;font-weight:600;}
+.sidebar-signin-btn:hover{background:var(--linen);}
+
+/* Sidebar nav buttons */
+.sidebar-nav{padding:10px;border-bottom:1px solid var(--border);}
+.sb-btn{width:100%;background:none;border:none;text-align:left;padding:10px 14px;font-family:'Crimson Pro',serif;font-size:.88rem;color:var(--ink-light);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:10px;letter-spacing:.02em;border-radius:2px;margin-bottom:2px;}
+.sb-btn:hover{background:var(--off-white);color:var(--ink);}
+.sb-btn.active{background:var(--carmine);color:white;font-weight:600;}
+.sb-btn .sb-icon{font-size:1rem;width:20px;text-align:center;flex-shrink:0;}
+.sb-btn .sb-count{margin-left:auto;font-size:.7rem;background:rgba(155,27,48,.12);color:var(--carmine);padding:1px 7px;border-radius:10px;}
+.sb-btn.active .sb-count{background:rgba(255,255,255,.2);color:white;}
+
+/* Sidebar panel content */
+.sidebar-panel{flex:1;overflow-y:auto;padding:0;}
+.panel-header{padding:14px 16px 10px;border-bottom:1px solid var(--border);background:var(--off-white);}
+.panel-title{font-family:'IM Fell English',serif;font-size:1.05rem;color:var(--ink);}
+.panel-subtitle{font-size:.7rem;color:var(--ink-light);margin-top:2px;}
+
+/* ── MY PROPERTIES panel ── */
+.prop-list{padding:10px;}
+.prop-card{border:1px solid var(--border);background:var(--white);margin-bottom:8px;cursor:pointer;transition:border-color .15s;}
+.prop-card:hover{border-color:var(--carmine);}
+.prop-card-top{padding:11px 13px;display:flex;gap:10px;align-items:flex-start;}
+.prop-card-img{width:52px;height:42px;object-fit:cover;flex-shrink:0;background:var(--linen);display:flex;align-items:center;justify-content:center;font-size:1.1rem;}
+.prop-card-img img{width:100%;height:100%;object-fit:cover;}
+.prop-card-addr{font-family:'IM Fell English',serif;font-size:.84rem;color:var(--ink);margin-bottom:2px;}
+.prop-card-meta{font-size:.68rem;color:var(--ink-light);line-height:1.4;}
+.prop-card-chips{display:flex;flex-wrap:wrap;gap:3px;margin-top:4px;}
+.prop-chip{background:var(--carmine);color:white;font-size:.58rem;padding:1px 6px;letter-spacing:.04em;text-transform:uppercase;font-weight:600;}
+.prop-card-actions{display:flex;border-top:1px solid var(--border);}
+.prop-card-btn{flex:1;background:none;border:none;padding:7px;font-family:'Crimson Pro',serif;font-size:.68rem;cursor:pointer;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-light);transition:all .15s;}
+.prop-card-btn:hover{background:var(--carmine);color:white;}
+.prop-card-btn+.prop-card-btn{border-left:1px solid var(--border);}
+
+/* ── MY PROFILE panel ── */
+.profile-panel{padding:16px;}
+.profile-avatar-lg{width:64px;height:64px;border-radius:50%;background:var(--carmine);display:flex;align-items:center;justify-content:center;font-size:1.8rem;color:white;margin:0 auto 12px;font-family:'IM Fell English',serif;}
+.profile-name-display{font-family:'IM Fell English',serif;font-size:1.1rem;color:var(--ink);text-align:center;margin-bottom:3px;}
+.profile-email-display{font-size:.72rem;color:var(--ink-light);text-align:center;margin-bottom:16px;}
+.profile-field-label{font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-light);font-weight:600;margin-bottom:4px;margin-top:12px;}
+.profile-input{width:100%;border:1px solid var(--border-strong);background:var(--off-white);color:var(--ink);padding:7px 10px;font-family:'Crimson Pro',serif;font-size:.88rem;outline:none;transition:border-color .15s;}
+.profile-input:focus{border-color:var(--carmine);}
+textarea.profile-input{resize:vertical;min-height:72px;line-height:1.55;}
+.btn-save-profile{width:100%;background:var(--carmine);color:white;border:none;padding:9px;font-family:'Crimson Pro',serif;font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;font-weight:600;margin-top:14px;}
+.btn-save-profile:hover{background:var(--carmine-dark);}
+.btn-signout-profile{width:100%;background:none;border:1px solid var(--border);color:var(--ink-light);padding:8px;font-family:'Crimson Pro',serif;font-size:.75rem;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;margin-top:8px;}
+.btn-signout-profile:hover{border-color:var(--carmine);color:var(--carmine);}
+
+/* ── MY CONNECTIONS / ANCESTORS panels ── */
+.coming-soon{padding:32px 16px;text-align:center;}
+.coming-soon-icon{font-size:2.4rem;display:block;margin-bottom:12px;}
+.coming-soon-title{font-family:'IM Fell English',serif;font-size:1rem;color:var(--ink);margin-bottom:8px;}
+.coming-soon-body{font-size:.82rem;color:var(--ink-light);line-height:1.65;}
+.coming-soon-note{font-size:.72rem;color:var(--carmine);margin-top:12px;font-style:italic;}
+
+.empty-state{padding:24px 16px;text-align:center;color:var(--ink-light);font-size:.84rem;line-height:1.65;}
+.empty-state .emoji{font-size:2rem;display:block;margin-bottom:10px;}
+
+/* Leaflet map */
+#leaflet-map{flex:1;}
+
+/* ── POPUP ── */
+.leaflet-popup-content-wrapper{background:white;border:none;border-radius:0;box-shadow:0 4px 20px rgba(0,0,0,.15),2px 2px 0 var(--carmine);padding:0;max-width:300px;}
+.leaflet-popup-content{margin:0;width:100%!important;}
+.leaflet-popup-tip{background:white;}
+.popup-photo{width:100%;height:130px;object-fit:cover;display:block;}
+.popup-photo-placeholder{width:100%;height:64px;background:var(--linen);display:flex;align-items:center;justify-content:center;font-size:1.4rem;}
+.popup-body{padding:12px 14px;}
+.popup-address{font-family:'IM Fell English',serif;font-size:.9rem;margin-bottom:6px;color:var(--ink);}
+.popup-families{display:flex;flex-wrap:wrap;gap:3px;margin-bottom:6px;}
+.family-chip{background:var(--carmine);color:white;font-size:.61rem;padding:1px 6px;letter-spacing:.04em;text-transform:uppercase;font-weight:600;}
+.popup-meta{font-size:.72rem;color:var(--ink-light);line-height:1.55;}
+.popup-meta-row{display:flex;gap:6px;margin-bottom:2px;}
+.popup-meta-label{color:var(--carmine);font-weight:600;min-width:60px;font-size:.62rem;text-transform:uppercase;letter-spacing:.04em;}
+.popup-notes{margin-top:6px;font-size:.73rem;color:var(--ink-light);line-height:1.55;border-top:1px solid var(--border);padding-top:6px;font-style:italic;}
+.popup-edit-bar{display:flex;border-top:1px solid var(--border);}
+.btn-popup-edit{flex:1;background:var(--carmine);color:white;border:none;padding:6px;font-family:'Crimson Pro',serif;font-size:.7rem;letter-spacing:.04em;text-transform:uppercase;cursor:pointer;font-weight:600;}
+.btn-popup-edit:hover{background:var(--carmine-dark);}
+.btn-popup-delete{background:none;border-left:1px solid var(--border);color:var(--ink-light);padding:6px 10px;font-family:'Crimson Pro',serif;font-size:.7rem;cursor:pointer;}
+.btn-popup-delete:hover{background:var(--carmine);color:white;}
+.custom-pin{width:22px;height:22px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,.3);cursor:pointer;}
+.custom-pin.mine{border:2px solid var(--gold);}
+
+/* ════════════════════════════
+   SHARED MODALS
+════════════════════════════ */
+.modal-backdrop{display:none;position:fixed;inset:0;background:rgba(26,10,14,.65);z-index:2000;align-items:center;justify-content:center;padding:20px;}
+.modal-backdrop.open{display:flex;}
+.modal-box{background:white;border-top:4px solid var(--carmine);width:100%;box-shadow:0 16px 48px rgba(0,0,0,.2);}
+.modal-hdr{padding:20px 24px 14px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;}
+.modal-hdr-title{font-family:'IM Fell English',serif;font-size:1.3rem;color:var(--ink);}
+.modal-hdr-sub{font-size:.7rem;color:var(--ink-light);margin-top:2px;}
+.modal-close-btn{background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--ink-light);padding:0 0 0 12px;}
+.modal-close-btn:hover{color:var(--carmine);}
+.modal-bdy{padding:20px 24px;}
+.modal-ftr{padding:12px 24px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;background:white;}
+
+/* Auth modal */
+#auth-modal .modal-box{max-width:390px;}
+.auth-tabs{display:flex;border-bottom:1px solid var(--border);}
+.auth-tab{flex:1;padding:10px;background:none;border:none;font-family:'Crimson Pro',serif;font-size:.82rem;cursor:pointer;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-light);border-bottom:2.5px solid transparent;transition:all .15s;margin-bottom:-1px;}
+.auth-tab.active{color:var(--carmine);border-bottom-color:var(--carmine);}
+.auth-field{margin-bottom:13px;}
+.auth-label{display:block;font-size:.67rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-light);margin-bottom:4px;font-weight:600;}
+.auth-input{width:100%;border:1px solid var(--border-strong);background:var(--off-white);color:var(--ink);padding:8px 11px;font-family:'Crimson Pro',serif;font-size:.92rem;outline:none;transition:border-color .15s;}
+.auth-input:focus{border-color:var(--carmine);}
+.auth-error{font-size:.72rem;color:var(--carmine);margin-top:2px;min-height:16px;}
+.btn-auth{width:100%;background:var(--carmine);color:white;border:none;padding:11px;font-family:'Crimson Pro',serif;font-size:.86rem;letter-spacing:.07em;text-transform:uppercase;cursor:pointer;font-weight:600;}
+.btn-auth:hover{background:var(--carmine-dark);}
+.btn-auth:disabled{background:var(--border);cursor:not-allowed;color:var(--ink-light);}
+
+/* Property add/edit modal */
+#prop-modal .modal-box{max-width:580px;max-height:90vh;overflow-y:auto;}
+.modal-section{margin-bottom:18px;}
+.modal-section-title{font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;color:var(--carmine);margin-bottom:9px;font-weight:700;border-bottom:1px solid var(--border);padding-bottom:5px;}
+.field-group{margin-bottom:11px;}
+.field-label{display:block;font-size:.66rem;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-light);margin-bottom:4px;font-weight:600;}
+.field-hint{font-size:.65rem;color:var(--carmine);margin-bottom:4px;font-style:italic;}
+.field-input{width:100%;border:1px solid var(--border-strong);background:var(--off-white);color:var(--ink);padding:7px 10px;font-family:'Crimson Pro',serif;font-size:.9rem;outline:none;transition:border-color .15s;}
+.field-input:focus{border-color:var(--carmine);}
+.field-input::placeholder{color:var(--border-strong);}
+textarea.field-input{resize:vertical;min-height:66px;line-height:1.55;}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+.photo-upload-area{border:2px dashed var(--border-strong);background:var(--off-white);padding:20px;text-align:center;cursor:pointer;transition:all .2s;position:relative;}
+.photo-upload-area:hover{border-color:var(--carmine);background:rgba(155,27,48,.03);}
+.photo-upload-area input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.photo-upload-icon{font-size:1.4rem;margin-bottom:4px;}
+.photo-upload-text{font-size:.73rem;color:var(--ink-light);line-height:1.45;}
+.photo-upload-text strong{color:var(--carmine);}
+#photo-preview{display:none;width:100%;max-height:155px;object-fit:cover;border:1px solid var(--border);margin-top:7px;}
+#family-rows{display:flex;flex-direction:column;gap:6px;}
+.family-row{display:grid;grid-template-columns:1fr 64px 64px 26px;gap:5px;align-items:center;}
+.btn-rm-family{background:none;border:1px solid var(--border-strong);color:var(--ink-light);width:26px;height:26px;cursor:pointer;font-size:.8rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.btn-rm-family:hover{border-color:var(--carmine);color:var(--carmine);}
+.btn-add-family{background:none;border:1.5px dashed rgba(155,27,48,.25);color:var(--carmine);padding:5px 10px;font-family:'Crimson Pro',serif;font-size:.7rem;cursor:pointer;letter-spacing:.05em;text-transform:uppercase;width:100%;margin-top:2px;}
+.btn-add-family:hover{background:rgba(155,27,48,.04);}
+#picker-map{width:100%;height:175px;border:1px solid var(--border);margin-bottom:6px;}
+.location-hint{font-size:.68rem;color:var(--ink-light);font-style:italic;margin-bottom:5px;}
+.location-coords{font-size:.7rem;color:var(--carmine);font-family:monospace;background:var(--off-white);padding:4px 8px;border:1px solid var(--border);display:inline-block;}
+.lang-toggle{display:flex;border:1px solid var(--border);overflow:hidden;width:fit-content;margin-bottom:14px;}
+.lang-btn{padding:4px 14px;background:var(--off-white);border:none;font-family:'Crimson Pro',serif;font-size:.73rem;cursor:pointer;color:var(--ink-light);}
+.lang-btn.active{background:var(--carmine);color:white;}
+.btn-cancel{background:none;border:1px solid var(--border);color:var(--ink-light);padding:8px 16px;font-family:'Crimson Pro',serif;font-size:.8rem;cursor:pointer;}
+.btn-cancel:hover{border-color:var(--carmine);}
+.btn-submit{background:var(--carmine);color:white;border:none;padding:8px 22px;font-family:'Crimson Pro',serif;font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;font-weight:600;min-width:110px;}
+.btn-submit:hover{background:var(--carmine-dark);}
+.btn-submit:disabled{background:var(--border);cursor:not-allowed;color:var(--ink-light);}
+
+/* Confirm delete */
+#confirm-modal .modal-box{max-width:340px;}
+
+/* Toast */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--ink);color:white;padding:9px 18px;font-family:'Crimson Pro',serif;font-size:.82rem;letter-spacing:.04em;z-index:9999;transition:transform .3s;pointer-events:none;white-space:nowrap;border-left:3px solid var(--carmine);}
+#toast.show{transform:translateX(-50%) translateY(0);}
+#toast.error{border-left-color:var(--gold);}
+#toast.success{border-left-color:var(--gold-light);}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.hero-text>*{animation:fadeUp .55s ease both}
+.hero-text>*:nth-child(1){animation-delay:.08s}.hero-text>*:nth-child(2){animation-delay:.18s}.hero-text>*:nth-child(3){animation-delay:.3s}.hero-text>*:nth-child(4){animation-delay:.44s}
+
+@media(max-width:900px){
+  #section-home{padding:52px 24px 48px}
+  .hero-inner{flex-direction:column;gap:36px}
+  .hero-visual{flex:none;width:100%}
+  .section-wrap{padding:52px 24px}
+  .about-grid{grid-template-columns:1fr}
+  .mission-pillars{grid-template-columns:1fr}
+  .mission-quote-block{padding:34px 26px}
+  .stats-bar{flex-wrap:wrap}
+  .stat-item{min-width:50%}
+  .sidebar{width:260px}
+  .family-row{grid-template-columns:1fr 50px 50px 26px}
+  .field-row{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════
+     LANDING PAGE
+════════════════════════════════ -->
+<div id="page-landing">
+  <nav class="site-nav">
+    <div class="nav-logo" onclick="scrollToSection('section-home')">
+      <span class="nav-logo-rune">ᛋ</span>
+      <div><span class="nav-logo-text">Saknes</span><span class="nav-logo-sub">Latvijas mantojums</span></div>
+    </div>
+    <div class="nav-tabs">
+      <button class="nav-tab active" onclick="scrollToSection('section-home')">Home</button>
+      <button class="nav-tab" onclick="scrollToSection('section-about')">About</button>
+      <button class="nav-tab" onclick="scrollToSection('section-mission')">Our Mission</button>
+      <button class="nav-tab" onclick="openMapApp()">Map →</button>
+    </div>
+    <div class="nav-spacer"></div>
+    <div class="nav-auth" id="landing-auth">
+      <button class="btn-nav-primary" onclick="openAuth('signin')">Sign In / Register</button>
+    </div>
+  </nav>
+
+  <section id="section-home">
+    <div class="hero-inner">
+      <div class="hero-text">
+        <div class="hero-eyebrow">Latvijas mantojuma karte</div>
+        <h1 class="hero-title">Find where your<br><em>family once stood</em></h1>
+        <p class="hero-body">Saknes connects the Latvian diaspora to the homes their ancestors built, farmed, and left behind. Place your family property on the 1935 map — and discover the stories already marked there.</p>
+        <div class="hero-actions">
+          <button class="btn-primary" onclick="openMapApp()">🗺 Open the Map</button>
+          <button class="btn-secondary" onclick="openMapApp();setTimeout(openAddProp,600)">＋ Add My Property</button>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="hero-map-frame">
+          <div class="preview-pin"></div><div class="preview-pin"></div><div class="preview-pin"></div><div class="preview-pin"></div><div class="preview-pin"></div>
+        </div>
+        <div class="hero-caption">1935. gada topogrāfiskā karte · 1935 Topographic Map</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="stats-bar">
+    <div class="stat-item"><span class="stat-num" id="stat-props">—</span><div class="stat-label">Properties Mapped</div></div>
+    <div class="stat-item"><span class="stat-num" id="stat-fams">—</span><div class="stat-label">Family Names</div></div>
+    <div class="stat-item"><span class="stat-num" id="stat-regs">—</span><div class="stat-label">Regions of Latvia</div></div>
+  </div>
+  <div class="belt"></div>
+
+  <section id="section-about" class="section-wrap alt">
+    <div class="section-inner">
+      <div class="section-overline">Par mums · About</div>
+      <h2 class="section-title">Preserving the places<br>that made us who we are</h2>
+      <div class="section-body">
+        <p>Latvia's history is written not only in its archives — but in the farmsteads, townhouses, and manors where generations were born, raised, and buried. Through deportations, wars, and the great diaspora of the 20th century, millions of Latvians were severed from the land their families had worked for centuries.</p>
+        <p><strong>Saknes</strong> — meaning <em>roots</em> in Latvian — is a living map built on the 1935 topographic survey of Latvia. Anyone can mark the property their family once called home, attach names and faces to those addresses, and find connections they didn't know existed.</p>
+        <p>Whether your family left Latvia in 1905, 1944, or 1990 — there is a place for them here.</p>
+      </div>
+      <div class="about-grid">
+        <div><span class="about-card-rune">🏚</span><div class="about-card-title">The 1935 Map</div><p class="about-card-body">We use the pre-war Latvian topographic survey — the most accurate record of the country before the occupations. Streets, farms, and buildings that no longer exist are visible exactly as they were.</p></div>
+        <div><span class="about-card-rune">👨‍👩‍👧</span><div class="about-card-title">Community Built</div><p class="about-card-body">Every pin on the map is added by a person with a connection to that place. Saknes is a living record, grown by the diaspora, for the diaspora.</p></div>
+        <div><span class="about-card-rune">🌍</span><div class="about-card-title">Global Reach</div><p class="about-card-body">Latvian communities exist across Australia, Sweden, the USA, the UK, Canada, and beyond. Saknes gives them a shared place to gather around the land they came from.</p></div>
+        <div><span class="about-card-rune">📜</span><div class="about-card-title">In Both Languages</div><p class="about-card-body">All content can be submitted in Latvian or English. We are building for the generation that remembers, and the generation that is rediscovering.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="belt"></div>
+
+  <section id="section-mission" class="section-wrap">
+    <div class="mission-quote-block">
+      <div class="mission-quote">"Kas tēva zemi mīl, tas māju zūdot raud — whoever loves their father's land weeps when that home is lost."</div>
+      <div class="mission-quote-attr">— Latvian proverb</div>
+    </div>
+    <div class="section-inner">
+      <div class="mission-pillars">
+        <div class="pillar"><div class="pillar-num">I</div><div class="pillar-title">Remember</div><p class="pillar-body">The first act of resistance against forgetting is to name. Saknes exists so that every family property — however modest — can be placed back on the map of Latvia.</p></div>
+        <div class="pillar"><div class="pillar-num">II</div><div class="pillar-title">Connect</div><p class="pillar-body">Families who lived on the same street in 1930 may now have grandchildren scattered across three continents. Saknes is where those threads can meet again.</p></div>
+        <div class="pillar"><div class="pillar-num">III</div><div class="pillar-title">Preserve</div><p class="pillar-body">Oral history dies with its last speaker. By putting names, photographs, and stories onto the map, we create a record that will outlast any individual memory.</p></div>
+      </div>
+      <div class="map-cta">
+        <div class="map-cta-title">Your family's place is waiting</div>
+        <p class="map-cta-body">It takes five minutes to add a property. Your contribution connects Latvians everywhere to the land they came from.</p>
+        <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;">
+          <button class="btn-primary" onclick="openMapApp();setTimeout(openAddProp,600)">＋ Add My Property</button>
+          <button class="btn-secondary" onclick="openMapApp()">Explore the Map</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="belt"></div>
+  <footer class="site-footer"><p>© 2025 Saknes · <a href="mailto:info@saknes.org">info@saknes.org</a> · Latvijas mantojuma karte</p></footer>
+</div>
+
+<!-- ════════════════════════════════
+     MAP APP
+════════════════════════════════ -->
+<div id="page-map">
+
+  <!-- Top bar -->
+  <div class="mapapp-topbar">
+    <div class="mapapp-home" onclick="closeMapApp()">
+      <span class="mapapp-home-rune">ᛋ</span>
+      <div>
+        <div class="mapapp-home-text">Saknes</div>
+        <div class="mapapp-home-back">← Back to home</div>
+      </div>
+    </div>
+
+    <div class="layer-toggle">
+      <button class="layer-btn active" id="btn-1935" onclick="setLayer('wig',this)">1935</button>
+      <button class="layer-btn" id="btn-now" onclick="setLayer('modern',this)">Now</button>
+    </div>
+
+    <div class="mapapp-search">
+      <input type="text" id="map-search" placeholder="Search properties…" oninput="doSearch(this.value)" onblur="setTimeout(closeSearch,180)">
+      <span class="mapapp-search-icon">🔍</span>
+      <div class="search-drop" id="search-drop"></div>
+    </div>
+
+    <div class="fam-toggle-wrap" id="fam-toggle-wrap">
+      <span class="fam-toggle-label">All families</span>
+      <label class="toggle-sw">
+        <input type="checkbox" id="fam-toggle" onchange="onFamToggle(this.checked)" disabled>
+        <span class="toggle-track"></span>
+      </label>
+      <span class="fam-toggle-label active-label">My family</span>
+    </div>
+
+    <span class="pin-count" id="pin-count"></span>
+    <div class="mapapp-spacer"></div>
+    <button class="btn-add-map" id="btn-add-map" onclick="openAddProp()">＋ Add Property</button>
+  </div>
+
+  <!-- Body: sidebar + map -->
+  <div class="mapapp-body">
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <!-- User area -->
+      <div class="sidebar-user" id="sidebar-user">
+        <button class="sidebar-signin-btn" onclick="openAuth('signin')">Sign In / Register to track your family</button>
+      </div>
+
+      <!-- Nav buttons (only shown when logged in) -->
+      <div class="sidebar-nav" id="sidebar-nav" style="display:none">
+        <button class="sb-btn active" id="sb-props" onclick="showPanel('properties')">
+          <span class="sb-icon">🏠</span> My Properties
+          <span class="sb-count" id="props-count">0</span>
+        </button>
+        <button class="sb-btn" id="sb-profile" onclick="showPanel('profile')">
+          <span class="sb-icon">👤</span> My Profile
+        </button>
+        <button class="sb-btn" id="sb-connections" onclick="showPanel('connections')">
+          <span class="sb-icon">🔗</span> My Connections
+        </button>
+        <button class="sb-btn" id="sb-ancestors" onclick="showPanel('ancestors')">
+          <span class="sb-icon">🌳</span> My Ancestors
+        </button>
+      </div>
+
+      <!-- Panel content -->
+      <div class="sidebar-panel" id="sidebar-panel">
+        <!-- default: show map instructions if not logged in -->
+        <div class="coming-soon" id="panel-default">
+          <span class="coming-soon-icon">🗺</span>
+          <div class="coming-soon-title">Welcome to Saknes</div>
+          <div class="coming-soon-body">Explore the 1935 map of Latvia. Sign in to add your family properties and track your heritage.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Map -->
+    <div id="leaflet-map"></div>
+  </div>
+</div>
+
+<!-- ── AUTH MODAL ── -->
+<div class="modal-backdrop" id="auth-modal">
+  <div class="modal-box">
+    <div class="modal-hdr">
+      <div><div class="modal-hdr-title">Welcome to Saknes</div><div class="modal-hdr-sub">Sign in to add and manage your family properties</div></div>
+      <button class="modal-close-btn" onclick="closeAuth()">✕</button>
+    </div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-in" onclick="authTab('signin')">Sign In</button>
+      <button class="auth-tab" id="tab-up" onclick="authTab('signup')">Register</button>
+    </div>
+    <div class="modal-bdy">
+      <div class="auth-field"><label class="auth-label">Email</label><input class="auth-input" type="email" id="auth-email" placeholder="your@email.com"></div>
+      <div class="auth-field"><label class="auth-label">Password</label><input class="auth-input" type="password" id="auth-pw" placeholder="••••••••"></div>
+      <div class="auth-field" id="auth-name-wrap" style="display:none"><label class="auth-label">Your Name (optional)</label><input class="auth-input" type="text" id="auth-name" placeholder="How you'd like to be known"></div>
+      <div class="auth-error" id="auth-err"></div>
+    </div>
+    <div class="modal-ftr"><button class="btn-auth" id="btn-auth" onclick="doAuth()">Sign In</button></div>
+  </div>
+</div>
+
+<!-- ── PROPERTY ADD/EDIT MODAL ── -->
+<div class="modal-backdrop" id="prop-modal">
+  <div class="modal-box">
+    <div class="modal-hdr">
+      <div><div class="modal-hdr-title" id="prop-modal-title">Add Your Family Property</div><div class="modal-hdr-sub">Pievienot ģimenes īpašumu · Add a property to the heritage map</div></div>
+      <button class="modal-close-btn" onclick="closePropModal()">✕</button>
+    </div>
+    <div class="modal-bdy">
+      <input type="hidden" id="edit-id">
+      <div class="modal-section">
+        <div class="modal-section-title">Property Photo</div>
+        <div class="photo-upload-area"><input type="file" accept="image/*" id="photo-input" onchange="onPhotoSelect(this)"><div class="photo-upload-icon">🏠</div><div class="photo-upload-text"><strong>Click to upload a photo</strong><br>Historical or recent — any image of the property</div></div>
+        <img id="photo-preview" src="" alt="Preview">
+      </div>
+      <div class="modal-section">
+        <div class="modal-section-title">Property Details</div>
+        <div class="field-group"><label class="field-label">Address or Place Name</label><input class="field-input" id="f-address" type="text" placeholder="e.g. Rīgas iela 12, Cēsis / Jaunbērziņi farm, Vidzeme"></div>
+        <div class="field-row">
+          <div class="field-group"><label class="field-label">Parish / Region</label><input class="field-input" id="f-parish" type="text" placeholder="e.g. Cēsu pagasts"></div>
+          <div class="field-group"><label class="field-label">Period (years)</label><input class="field-input" id="f-period" type="text" placeholder="e.g. 1890–1944"></div>
+        </div>
+      </div>
+      <div class="modal-section">
+        <div class="modal-section-title">Family Names</div>
+        <div class="field-hint">Add each family that lived here (with years if known)</div>
+        <div id="family-rows"></div>
+        <button class="btn-add-family" onclick="addFamRow()">＋ Add another family</button>
+      </div>
+      <div class="modal-section">
+        <div class="modal-section-title">Occupation / Trade</div>
+        <input class="field-input" id="f-occupation" type="text" placeholder="e.g. Farmer, Blacksmith / Zemnieks, Kalējs">
+      </div>
+      <div class="modal-section">
+        <div class="modal-section-title">Additional Notes</div>
+        <textarea class="field-input" id="f-notes" placeholder="Any additional history, stories, or context…"></textarea>
+      </div>
+      <div class="modal-section">
+        <div class="modal-section-title">Location on Map</div>
+        <p class="location-hint">Click on the map below to pin the property location</p>
+        <div id="picker-map"></div>
+        <div class="location-coords" id="coords-display">No location selected — click the map above</div>
+      </div>
+    </div>
+    <div class="modal-ftr">
+      <button class="btn-cancel" onclick="closePropModal()">Cancel</button>
+      <button class="btn-submit" id="btn-submit" onclick="saveProp()"><span id="btn-submit-lbl">Submit to Map</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- ── CONFIRM DELETE ── -->
+<div class="modal-backdrop" id="confirm-modal">
+  <div class="modal-box">
+    <div class="modal-hdr"><div><div class="modal-hdr-title">Delete this property?</div><div class="modal-hdr-sub">This cannot be undone</div></div></div>
+    <div class="modal-bdy" style="font-size:.88rem;color:var(--ink-light);line-height:1.65;">This will permanently remove the property and all associated family records from the map.</div>
+    <div class="modal-ftr">
+      <button class="btn-cancel" onclick="closeConfirm()">Cancel</button>
+      <button class="btn-submit" onclick="doDelete()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ── SUPABASE ──
+const{createClient}=supabase;
+const sb=createClient('https://jqzzldruijkkfrcjmgtb.supabase.co','sb_publishable_CTidQ-RSwWEXgphEg0eAug_Flh1Gt5_');
+
+const LATVIA_CENTER=[56.87,24.6];
+// Tight bounds — Latvia only, no surrounding countries
+const LATVIA_BOUNDS=[[55.67,20.97],[58.08,28.24]];
+
+let map=null,pickerMap=null,pickerMarker=null,selLat=null,selLng=null;
+let layers={},markersLayer=null;
+let allProps=[],myProps=[],currentUser=null,pendingDel=null;
+let authMode='signin',famRowCount=0,showMineOnly=false,currentLang='en';
+
+// ── AUTH STATE ──
+sb.auth.onAuthStateChange((e,s)=>{
+  currentUser=s?.user||null;
+  updateLandingAuth();updateSidebar();
+  if(currentUser&&map)loadMyProps();
+});
+sb.auth.getSession().then(({data:{session}})=>{
+  currentUser=session?.user||null;
+  updateLandingAuth();updateSidebar();
+});
+
+function updateLandingAuth(){
+  const el=document.getElementById('landing-auth');if(!el)return;
+  el.innerHTML=currentUser
+    ?`<span class="nav-user-email">👤 ${currentUser.email}</span><button class="btn-nav-ghost" onclick="doSignOut()">Sign out</button>`
+    :`<button class="btn-nav-primary" onclick="openAuth('signin')">Sign In / Register</button>`;
+}
+
+function updateSidebar(){
+  const userEl=document.getElementById('sidebar-user');
+  const navEl=document.getElementById('sidebar-nav');
+  const toggle=document.getElementById('fam-toggle');
+  if(!userEl)return;
+
+  if(currentUser){
+    const init=(currentUser.email||'?')[0].toUpperCase();
+    const name=currentUser.user_metadata?.name||currentUser.email.split('@')[0];
+    userEl.innerHTML=`<div class="sidebar-avatar">${init}</div><div style="flex:1;overflow:hidden;"><div class="sidebar-user-name">${name}</div><div class="sidebar-user-sub">${currentUser.email}</div></div>`;
+    navEl.style.display='block';
+    if(toggle){toggle.disabled=false;}
+    showPanel('properties');
+  }else{
+    userEl.innerHTML=`<button class="sidebar-signin-btn" onclick="openAuth('signin')">Sign In / Register to track your family</button>`;
+    navEl.style.display='none';
+    if(toggle){toggle.disabled=true;toggle.checked=false;showMineOnly=false;}
+    document.getElementById('sidebar-panel').innerHTML=`<div class="coming-soon" id="panel-default"><span class="coming-soon-icon">🗺</span><div class="coming-soon-title">Welcome to Saknes</div><div class="coming-soon-body">Explore the 1935 map of Latvia. Sign in to add your family properties and track your heritage.</div></div>`;
+  }
+}
+
+// ── PAGE SWITCHING ──
+function scrollToSection(id){document.getElementById(id)?.scrollIntoView({behavior:'smooth'});}
+
+function openMapApp(){
+  document.getElementById('page-landing').style.display='none';
+  document.getElementById('page-map').style.display='flex';
+  document.body.style.overflow='hidden';
+  initMap();
+}
+
+function closeMapApp(){
+  document.getElementById('page-map').style.display='none';
+  document.getElementById('page-landing').style.display='flex';
+  document.body.style.overflow='';
+}
+
+// Landing scroll spy
+const SECS=['section-home','section-about','section-mission'];
+window.addEventListener('scroll',()=>{
+  let cur='section-home';
+  SECS.forEach(id=>{const el=document.getElementById(id);if(el&&window.scrollY>=el.offsetTop-120)cur=id;});
+  document.querySelectorAll('.nav-tab').forEach((t,i)=>{if(i<3)t.classList.toggle('active',SECS[i]===cur);});
+},{passive:true});
+
+// ── MAP INIT ──
+function initMap(){
+  if(map)return;
+  const bounds=L.latLngBounds(LATVIA_BOUNDS[0],LATVIA_BOUNDS[1]);
+  map=L.map('leaflet-map',{
+    maxBounds:bounds,
+    maxBoundsViscosity:1.0,
+    bounceAtZoomLimits:false,
+    zoomSnap:0.5,
+    zoomDelta:0.5,
+    wheelPxPerZoomLevel:120
+  });
+  // Fit to Latvia, then lock min zoom so user can't zoom out beyond Latvia
+  map.fitBounds(bounds,{padding:[2,2]});
+  setTimeout(()=>{map.setMinZoom(map.getZoom()-0.5);},200);
+  map.on('drag',()=>map.panInsideBounds(bounds,{animate:false}));
+  layers.wig=L.tileLayer('https://mapproxy.kartes.lv/tiles/1_250k/{z}/{x}/{y}.png',{attribution:'© LĢIA',maxZoom:14,opacity:.92});
+  layers.modern=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:19});
+  layers.wig.addTo(map);
+  layers.wig.on('tileerror',()=>{if(!map.hasLayer(layers.modern)){layers.modern.addTo(map);}});
+  markersLayer=L.layerGroup().addTo(map);
+  loadAllProps();
+}
+
+function setLayer(key,btn){
+  Object.values(layers).forEach(l=>map.removeLayer(l));
+  layers[key].addTo(map);
+  document.querySelectorAll('.layer-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// ── LOAD DATA ──
+async function loadAllProps(){
+  const{data,error}=await sb.from('properties').select('*,property_families(*)');
+  if(error){loadDemoProps();return;}
+  allProps=data||[];
+  applyFilter();updateStats(allProps);
+  if(currentUser)loadMyProps();
+}
+
+async function loadMyProps(){
+  if(!currentUser)return;
+  const{data}=await sb.from('properties').select('*,property_families(*)').eq('added_by',currentUser.id).order('created_at',{ascending:false});
+  myProps=data||[];
+  document.getElementById('props-count').textContent=myProps.length;
+  if(document.getElementById('sb-props')?.classList.contains('active'))renderPropsPanel();
+}
+
+function loadDemoProps(){
+  allProps=[
+    {id:'d1',address:'Jaunbērziņi saimniecība',parish:'Cēsu pagasts',period:'1890–1944',occupation:'Zemnieks',notes:'Trīs paaudzes Bērziņu ģimene dzīvoja šajā saimniecībā pirms kara.',lat:57.31,lng:25.27,photo_url:null,added_by:null,property_families:[{name:'Bērziņš',year_from:1890,year_to:1944}]},
+    {id:'d2',address:'Kalniņu mājas',parish:'Rīgas apriņķis',period:'1905–1940',occupation:'Tirgotājs',notes:'Emigrēja uz Zviedriju 1944. gadā.',lat:56.95,lng:24.1,photo_url:null,added_by:null,property_families:[{name:'Kalniņš',year_from:1905,year_to:1940},{name:'Ozoliņš',year_from:1918,year_to:1935}]},
+    {id:'d3',address:'Ozolu muiža',parish:'Jelgavas pagasts',period:'1870–1920',occupation:'Skolotājs',notes:'Manor house, now demolished.',lat:56.65,lng:23.72,photo_url:null,added_by:null,property_families:[{name:'Ozols',year_from:1870,year_to:1920}]}
+  ];
+  applyFilter();updateStats(allProps);
+}
+
+// ── FILTER & RENDER ──
+function onFamToggle(checked){showMineOnly=checked&&!!currentUser;applyFilter();}
+
+function applyFilter(){
+  const list=showMineOnly&&currentUser?allProps.filter(p=>p.added_by===currentUser.id):allProps;
+  renderMarkers(list);
+}
+
+function renderMarkers(list){
+  markersLayer.clearLayers();
+  list.forEach(p=>{
+    if(!p.lat||!p.lng)return;
+    const mine=currentUser&&p.added_by===currentUser.id;
+    const icon=L.divIcon({html:`<div class="custom-pin${mine?' mine':''}" style="background:${mine?'#B8832A':'#9B1B30'}"></div>`,iconSize:[22,22],iconAnchor:[11,22],popupAnchor:[0,-24],className:''});
+    L.marker([p.lat,p.lng],{icon}).bindPopup(buildPopup(p),{maxWidth:300}).addTo(markersLayer);
+  });
+  document.getElementById('pin-count').textContent=`${list.length} propert${list.length===1?'y':'ies'}`;
+}
+
+function buildPopup(p){
+  const fams=p.property_families||[];
+  const chips=fams.map(f=>`<span class="family-chip">${f.name}${(f.year_from||f.year_to)?` (${f.year_from||'?'}–${f.year_to||'?'})`:''}</span>`).join('');
+  const photo=p.photo_url?`<img class="popup-photo" src="${p.photo_url}" alt="">`:`<div class="popup-photo-placeholder">🏠</div>`;
+  const mine=currentUser&&p.added_by===currentUser.id;
+  const editBar=mine?`<div class="popup-edit-bar"><button class="btn-popup-edit" onclick="openEditProp('${p.id}')">✏ Edit</button><button class="btn-popup-delete" onclick="askDelete('${p.id}')">🗑</button></div>`:'';
+  return`${photo}<div class="popup-body">
+    <div class="popup-address">${p.address}${p.parish?` · ${p.parish}`:''}</div>
+    ${chips?`<div class="popup-families">${chips}</div>`:''}
+    ${p.period?`<div class="popup-meta"><div class="popup-meta-row"><span class="popup-meta-label">Period</span>${p.period}</div></div>`:''}
+    ${p.occupation?`<div class="popup-meta"><div class="popup-meta-row"><span class="popup-meta-label">Occupation</span>${p.occupation}</div></div>`:''}
+    ${p.notes?`<div class="popup-notes">${p.notes}</div>`:''}
+  </div>${editBar}`;
+}
+
+// ── SIDEBAR PANELS ──
+function showPanel(name){
+  ['sb-props','sb-profile','sb-connections','sb-ancestors'].forEach(id=>{
+    document.getElementById(id)?.classList.remove('active');
+  });
+  const active={'properties':'sb-props','profile':'sb-profile','connections':'sb-connections','ancestors':'sb-ancestors'}[name];
+  document.getElementById(active)?.classList.add('active');
+
+  const panel=document.getElementById('sidebar-panel');
+  if(name==='properties') renderPropsPanel();
+  else if(name==='profile') renderProfilePanel();
+  else if(name==='connections') renderComingSoon(panel,'🔗',t('conn_title'),t('conn_body'),t('conn_note'));
+  else if(name==='ancestors') renderComingSoon(panel,'🌳',t('anc_title'),t('anc_body'),t('anc_note'));
+}
+
+function renderPropsPanel(){
+  const panel=document.getElementById('sidebar-panel');
+  if(!myProps.length){
+    panel.innerHTML=`<div class="panel-header"><div class="panel-title">My Properties</div><div class="panel-subtitle">Properties you have added to the map</div></div><div class="empty-state"><span class="emoji">🏚</span>No properties added yet.<br><br><button class="btn-nav-primary" style="font-size:.78rem;padding:8px 16px;" onclick="openAddProp()">＋ Add My First Property</button></div>`;
+    return;
+  }
+  panel.innerHTML=`<div class="panel-header"><div class="panel-title">My Properties</div><div class="panel-subtitle">${myProps.length} propert${myProps.length===1?'y':'ies'} added</div></div><div class="prop-list">${myProps.map(p=>propCard(p)).join('')}</div>`;
+}
+
+function propCard(p){
+  const chips=(p.property_families||[]).map(f=>`<span class="prop-chip">${f.name}</span>`).join('');
+  const imgEl=p.photo_url?`<div class="prop-card-img"><img src="${p.photo_url}" alt=""></div>`:`<div class="prop-card-img">🏠</div>`;
+  return`<div class="prop-card">
+    <div class="prop-card-top" onclick="flyTo('${p.id}')">
+      ${imgEl}
+      <div>
+        <div class="prop-card-addr">${p.address}</div>
+        <div class="prop-card-meta">${p.parish||''} ${p.period?'· '+p.period:''}</div>
+        <div class="prop-card-chips">${chips}</div>
+      </div>
+    </div>
+    <div class="prop-card-actions">
+      <button class="prop-card-btn" onclick="openEditProp('${p.id}')">✏ Edit</button>
+      <button class="prop-card-btn" onclick="askDelete('${p.id}')">🗑 Delete</button>
+      <button class="prop-card-btn" onclick="flyTo('${p.id}')">🗺 View</button>
+    </div>
+  </div>`;
+}
+
+function renderProfilePanel(){
+  const panel=document.getElementById('sidebar-panel');
+  const init=(currentUser.email||'?')[0].toUpperCase();
+  const name=currentUser.user_metadata?.name||currentUser.email.split('@')[0];
+  const savedBio=localStorage.getItem(`saknes_bio_${currentUser.id}`)||'';
+  const savedName=localStorage.getItem(`saknes_name_${currentUser.id}`)||name;
+  panel.innerHTML=`
+    <div class="panel-header"><div class="panel-title">My Profile</div><div class="panel-subtitle">Your heritage profile</div></div>
+    <div class="profile-panel">
+      <div class="profile-avatar-lg">${init}</div>
+      <div class="profile-name-display">${savedName}</div>
+      <div class="profile-email-display">${currentUser.email}</div>
+      <div class="profile-field-label">Display Name</div>
+      <input class="profile-input" id="profile-name" type="text" value="${savedName}" placeholder="Your name">
+      <div class="profile-field-label">About your connection to Latvia</div>
+      <textarea class="profile-input" id="profile-bio" placeholder="Which region did your family come from? When did they emigrate? What do you know so far…">${savedBio}</textarea>
+      <button class="btn-save-profile" onclick="saveProfile()">Save Profile</button>
+      <button class="btn-signout-profile" onclick="doSignOut()">Sign Out</button>
+    </div>`;
+}
+
+function renderComingSoon(panel,icon,title,body,note){
+  panel.innerHTML=`<div class="panel-header"><div class="panel-title">${title}</div></div><div class="coming-soon"><span class="coming-soon-icon">${icon}</span><div class="coming-soon-title">${title}</div><div class="coming-soon-body">${body}</div><div class="coming-soon-note">${note}</div></div>`;
+}
+
+function saveProfile(){
+  const name=document.getElementById('profile-name')?.value||'';
+  const bio=document.getElementById('profile-bio')?.value||'';
+  localStorage.setItem(`saknes_name_${currentUser.id}`,name);
+  localStorage.setItem(`saknes_bio_${currentUser.id}`,bio);
+  updateSidebar();
+  showToast('Profile saved','success');
+}
+
+function flyTo(id){
+  const p=allProps.find(x=>x.id===id)||myProps.find(x=>x.id===id);
+  if(!p)return;
+  map.setView([p.lat,p.lng],14);
+}
+
+// ── SEARCH ──
+function doSearch(q){
+  const dd=document.getElementById('search-drop');
+  if(!q.trim()){dd.classList.remove('open');return;}
+  const lq=q.toLowerCase();
+  const res=allProps.filter(p=>
+    (p.address||'').toLowerCase().includes(lq)||
+    (p.parish||'').toLowerCase().includes(lq)||
+    (p.notes||'').toLowerCase().includes(lq)||
+    (p.occupation||'').toLowerCase().includes(lq)||
+    (p.property_families||[]).some(f=>(f.name||'').toLowerCase().includes(lq))
+  ).slice(0,7);
+  dd.innerHTML=res.length
+    ?res.map(p=>`<div class="search-item" onclick="pickResult('${p.id}')"><div class="search-item-addr">${p.address}</div><div class="search-item-meta">${p.parish||''} ${(p.property_families||[]).map(f=>f.name).join(', ')}</div></div>`).join('')
+    :`<div class="search-no-results">No properties found</div>`;
+  dd.classList.add('open');
+}
+
+function pickResult(id){
+  closeSearch();
+  document.getElementById('map-search').value='';
+  const p=allProps.find(x=>x.id===id);
+  if(!p)return;
+  map.setView([p.lat,p.lng],14);
+  setTimeout(()=>{markersLayer.eachLayer(m=>{if(Math.abs(m.getLatLng().lat-p.lat)<.0001)m.openPopup();});},400);
+}
+function closeSearch(){document.getElementById('search-drop').classList.remove('open');}
+
+// ── AUTH ──
+function openAuth(mode){authTab(mode);document.getElementById('auth-modal').classList.add('open');setTimeout(()=>document.getElementById('auth-email').focus(),100);}
+function closeAuth(){document.getElementById('auth-modal').classList.remove('open');document.getElementById('auth-err').textContent='';}
+function authTab(mode){
+  authMode=mode;
+  document.getElementById('tab-in').classList.toggle('active',mode==='signin');
+  document.getElementById('tab-up').classList.toggle('active',mode==='signup');
+  document.getElementById('auth-name-wrap').style.display=mode==='signup'?'block':'none';
+  document.getElementById('btn-auth').textContent=mode==='signin'?'Sign In':'Create Account';
+  document.getElementById('auth-err').textContent='';
+}
+async function doAuth(){
+  const email=document.getElementById('auth-email').value.trim(),pw=document.getElementById('auth-pw').value;
+  const errEl=document.getElementById('auth-err'),btn=document.getElementById('btn-auth');
+  if(!email||!pw){errEl.textContent='Please enter your email and password.';return;}
+  btn.disabled=true;btn.textContent='Please wait…';errEl.textContent='';
+  let error;
+  if(authMode==='signin')({error}=await sb.auth.signInWithPassword({email,password:pw}));
+  else({error}=await sb.auth.signUp({email,password:pw,options:{emailRedirectTo:'https://saknes.org'}}));
+  btn.disabled=false;btn.textContent=authMode==='signin'?'Sign In':'Create Account';
+  if(error){errEl.textContent=error.message;return;}
+  if(authMode==='signup'){errEl.style.color='green';errEl.textContent='Check your email to confirm your account, then sign in.';setTimeout(()=>{errEl.style.color='';authTab('signin');},4000);return;}
+  closeAuth();showToast('✓ Signed in','success');
+}
+async function doSignOut(){
+  await sb.auth.signOut();myProps=[];showMineOnly=false;
+  const t=document.getElementById('fam-toggle');if(t){t.checked=false;t.disabled=true;}
+  if(map)applyFilter();
+  updateLandingAuth();updateSidebar();showToast('Signed out');
+}
+
+// ── ADD / EDIT PROPERTY ──
+function openAddProp(){
+  if(!currentUser){openAuth('signin');showToast('Please sign in to add a property','error');return;}
+  document.getElementById('edit-id').value='';
+  document.getElementById('prop-modal-title').textContent='Add Your Family Property';
+  document.getElementById('btn-submit-lbl').textContent='Submit to Map';
+  resetPropForm();document.getElementById('prop-modal').classList.add('open');
+  initFamRows();initPickerMap();
+}
+
+async function openEditProp(id){
+  if(!currentUser){openAuth('signin');return;}
+  let p=allProps.find(x=>x.id===id)||myProps.find(x=>x.id===id);
+  if(!p){const{data}=await sb.from('properties').select('*,property_families(*)').eq('id',id).single();p=data;}
+  if(!p)return;
+  if(map)map.closePopup();
+  document.getElementById('edit-id').value=id;
+  document.getElementById('prop-modal-title').textContent='Edit Property';
+  document.getElementById('btn-submit-lbl').textContent='Save Changes';
+  resetPropForm();
+  document.getElementById('f-address').value=p.address||'';
+  document.getElementById('f-parish').value=p.parish||'';
+  document.getElementById('f-period').value=p.period||'';
+  document.getElementById('f-occupation').value=p.occupation||'';
+  document.getElementById('f-notes').value=p.notes||'';
+  if(p.photo_url){const img=document.getElementById('photo-preview');img.src=p.photo_url;img.style.display='block';}
+  document.getElementById('family-rows').innerHTML='';famRowCount=0;
+  const fams=p.property_families||[];
+  fams.length?fams.forEach(f=>addFamRow(f.name,f.year_from,f.year_to)):addFamRow();
+  selLat=p.lat;selLng=p.lng;
+  document.getElementById('coords-display').textContent=`📍 ${Number(p.lat).toFixed(5)}° N, ${Number(p.lng).toFixed(5)}° E`;
+  document.getElementById('prop-modal').classList.add('open');
+  initPickerMap(p.lat,p.lng);
+}
+
+function closePropModal(){document.getElementById('prop-modal').classList.remove('open');}
+
+function initFamRows(){if(!document.getElementById('family-rows').children.length)addFamRow();}
+function addFamRow(name='',yf='',yt=''){
+  famRowCount++;const id=famRowCount;
+  const row=document.createElement('div');row.className='family-row';row.id=`fr-${id}`;
+  row.innerHTML=`<input class="field-input" type="text" value="${name}" placeholder="Family surname" style="height:30px;padding:3px 8px"><input class="field-input" type="number" value="${yf||''}" placeholder="From" style="height:30px;padding:3px 5px;text-align:center"><input class="field-input" type="number" value="${yt||''}" placeholder="To" style="height:30px;padding:3px 5px;text-align:center"><button class="btn-rm-family" onclick="rmFamRow(${id})">✕</button>`;
+  document.getElementById('family-rows').appendChild(row);
+}
+function rmFamRow(id){const r=document.getElementById(`fr-${id}`);if(r&&document.getElementById('family-rows').children.length>1)r.remove();}
+
+function initPickerMap(lat,lng){
+  const center=lat&&lng?[lat,lng]:LATVIA_CENTER,zoom=lat&&lng?12:6;
+  if(pickerMap){
+    pickerMap.setView(center,zoom);
+    if(lat&&lng){if(pickerMarker)pickerMap.removeLayer(pickerMarker);pickerMarker=L.marker([lat,lng]).addTo(pickerMap);}
+    pickerMap.invalidateSize();return;
+  }
+  setTimeout(()=>{
+    pickerMap=L.map('picker-map',{center,zoom,maxBounds:L.latLngBounds(LATVIA_BOUNDS[0],LATVIA_BOUNDS[1]),maxBoundsViscosity:1.0,minZoom:5});
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap'}).addTo(pickerMap);
+    if(lat&&lng)pickerMarker=L.marker([lat,lng]).addTo(pickerMap);
+    pickerMap.on('click',e=>{
+      selLat=e.latlng.lat.toFixed(5);selLng=e.latlng.lng.toFixed(5);
+      if(pickerMarker)pickerMap.removeLayer(pickerMarker);
+      pickerMarker=L.marker([selLat,selLng]).addTo(pickerMap);
+      document.getElementById('coords-display').textContent=`📍 ${selLat}° N, ${selLng}° E`;
+    });
+  },120);
+}
+
+function onPhotoSelect(input){
+  const f=input.files[0];if(!f)return;
+  const r=new FileReader();r.onload=e=>{const img=document.getElementById('photo-preview');img.src=e.target.result;img.style.display='block';};r.readAsDataURL(f);
+}
+function setLang(lang,btn){currentLang=lang;document.querySelectorAll('.lang-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
+
+async function saveProp(){
+  if(!currentUser){openAuth('signin');return;}
+  const address=document.getElementById('f-address').value.trim();
+  if(!address){showToast('Please enter an address','error');return;}
+  if(!selLat||!selLng){showToast('Please click the map to set a location','error');return;}
+  const editId=document.getElementById('edit-id').value;
+  const fams=[];
+  document.querySelectorAll('#family-rows .family-row').forEach(row=>{
+    const inp=row.querySelectorAll('input');const nm=inp[0].value.trim();
+    if(nm)fams.push({name:nm,year_from:inp[1].value?parseInt(inp[1].value):null,year_to:inp[2].value?parseInt(inp[2].value):null});
+  });
+  const btn=document.getElementById('btn-submit');btn.disabled=true;document.getElementById('btn-submit-lbl').textContent='Saving…';
+
+  let photo_url=null;
+  const pf=document.getElementById('photo-input').files[0];
+  if(pf){
+    const ext=pf.name.split('.').pop(),fn=`${currentUser.id}_${Date.now()}.${ext}`;
+    const{data:ud,error:ue}=await sb.storage.from('property-photos').upload(fn,pf,{contentType:pf.type});
+    if(!ue&&ud){const{data:url}=sb.storage.from('property-photos').getPublicUrl(fn);photo_url=url?.publicUrl;}
+  }
+
+  const payload={address,parish:document.getElementById('f-parish').value.trim()||null,period:document.getElementById('f-period').value.trim()||null,occupation:document.getElementById('f-occupation').value.trim()||null,notes:document.getElementById('f-notes').value.trim()||null,lat:parseFloat(selLat),lng:parseFloat(selLng)};
+  if(photo_url)payload.photo_url=photo_url;
+
+  if(editId){
+    const{error}=await sb.from('properties').update(payload).eq('id',editId).eq('added_by',currentUser.id);
+    if(error){showToast('Error saving','error');btn.disabled=false;document.getElementById('btn-submit-lbl').textContent='Save Changes';return;}
+    await sb.from('property_families').delete().eq('property_id',editId);
+    if(fams.length)await sb.from('property_families').insert(fams.map(f=>({...f,property_id:editId})));
+    const updated={...allProps.find(p=>p.id===editId),...payload,property_families:fams};
+    const ai=allProps.findIndex(p=>p.id===editId);if(ai>-1)allProps[ai]=updated;
+    const mi=myProps.findIndex(p=>p.id===editId);if(mi>-1)myProps[mi]=updated;
+    showToast('✓ Updated','success');
+  }else{
+    const{data:pd,error:pe}=await sb.from('properties').insert([{...payload,added_by:currentUser.id}]).select().single();
+    if(pe){showToast('Error saving','error');btn.disabled=false;document.getElementById('btn-submit-lbl').textContent='Submit to Map';return;}
+    if(fams.length&&pd?.id)await sb.from('property_families').insert(fams.map(f=>({...f,property_id:pd.id})));
+    const np={...pd,property_families:fams};allProps.push(np);myProps.unshift(np);
+    map.setView([payload.lat,payload.lng],13);showToast('✓ Property added!','success');
+  }
+  document.getElementById('props-count').textContent=myProps.length;
+  applyFilter();renderPropsPanel();closePropModal();resetPropForm();
+  btn.disabled=false;document.getElementById('btn-submit-lbl').textContent='Submit to Map';
+}
+
+// ── DELETE ──
+function askDelete(id){pendingDel=id;if(map)map.closePopup();document.getElementById('confirm-modal').classList.add('open');}
+function closeConfirm(){pendingDel=null;document.getElementById('confirm-modal').classList.remove('open');}
+async function doDelete(){
+  if(!pendingDel||!currentUser)return;const id=pendingDel;closeConfirm();
+  await sb.from('property_families').delete().eq('property_id',id);
+  const{error}=await sb.from('properties').delete().eq('id',id).eq('added_by',currentUser.id);
+  if(error){showToast('Could not delete','error');return;}
+  allProps=allProps.filter(p=>p.id!==id);myProps=myProps.filter(p=>p.id!==id);
+  document.getElementById('props-count').textContent=myProps.length;
+  applyFilter();renderPropsPanel();showToast('Deleted','success');
+}
+
+function resetPropForm(){
+  ['f-address','f-parish','f-period','f-occupation','f-notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('family-rows').innerHTML='';famRowCount=0;
+  const img=document.getElementById('photo-preview');img.style.display='none';img.src='';
+  document.getElementById('photo-input').value='';selLat=null;selLng=null;
+  document.getElementById('coords-display').textContent='No location selected — click the map above';
+  if(pickerMarker&&pickerMap){pickerMap.removeLayer(pickerMarker);pickerMarker=null;}
+}
+
+// ── STATS ──
+function updateStats(props){
+  const fams=new Set(),regs=new Set();
+  props.forEach(p=>{(p.property_families||[]).forEach(f=>fams.add(f.name));if(p.parish)regs.add(p.parish.split(' ')[0]);});
+  animCount('stat-props',props.length);animCount('stat-fams',fams.size);animCount('stat-regs',Math.max(regs.size,1));
+}
+function animCount(id,target){
+  const el=document.getElementById(id);if(!el)return;let c=0;const step=Math.ceil(target/30);
+  const t=setInterval(()=>{c=Math.min(c+step,target);el.textContent=c;if(c>=target)clearInterval(t);},40);
+}
+
+function showToast(msg,type=''){
+  const t=document.getElementById('toast');t.textContent=msg;t.className=[type,'show'].filter(Boolean).join(' ');
+  setTimeout(()=>t.className='',3000);
+}
+
+// ── EMAIL REDIRECT ──
+if(window.location.hash.includes('access_token')){
+  sb.auth.getSession().then(({data:{session}})=>{
+    if(session){currentUser=session.user;updateLandingAuth();updateSidebar();showToast('✓ Email confirmed — signed in','success');history.replaceState(null,'',window.location.pathname);}
+  });
+}
+
+// ── LANDING STATS ──
+(async()=>{
+  const{data}=await sb.from('properties').select('id,parish,property_families(name)');
+  if(data){
+    const fams=new Set(),regs=new Set();
+    data.forEach(p=>{(p.property_families||[]).forEach(f=>fams.add(f.name));if(p.parish)regs.add(p.parish.split(' ')[0]);});
+    animCount('stat-props',data.length);animCount('stat-fams',fams.size||0);animCount('stat-regs',regs.size||1);
+  }
+})();
+
+// ── TRANSLATIONS ──
+
+
+
+
+
+
+
+</script>
+</body>
+</html>
