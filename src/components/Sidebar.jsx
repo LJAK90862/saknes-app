@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
-import { useAuth, useToast } from '../App'
+import { useAuth, useToast, useLang } from '../App'
 import FriendsPanel from './FriendsPanel'
 import ChatPanel from './ChatPanel'
 
 export default function Sidebar({ myProps, onOpenAuth, onEditProp, onDeleteProp, onFlyTo, onAddProp, friendIds, unreadCount, onFriendsChanged, activePanel }) {
   const { user } = useAuth()
   const showToast = useToast()
+  const { t } = useLang()
   const [profileName, setProfileName] = useState('')
   const [profileBio, setProfileBio] = useState('')
 
@@ -24,13 +25,13 @@ export default function Sidebar({ myProps, onOpenAuth, onEditProp, onDeleteProp,
     const { error } = await supabase.from('profiles').upsert({
       id: user.id, display_name: profileName, bio: profileBio, updated_at: new Date().toISOString()
     })
-    if (error) { showToast('K\u013c\u016bda saglab\u0101jot', 'error'); return }
-    showToast('Profils saglab\u0101ts', 'success')
+    if (error) { showToast(t('toast.profileError'), 'error'); return }
+    showToast(t('toast.profileSaved'), 'success')
   }
 
   async function signOut() {
     await supabase.auth.signOut()
-    showToast('Izrakst\u012bj\u0101ties')
+    showToast(t('toast.signedOut'))
   }
 
   const init = user ? user.email[0].toUpperCase() : '?'
@@ -39,7 +40,7 @@ export default function Sidebar({ myProps, onOpenAuth, onEditProp, onDeleteProp,
   return (
     <div className="sidebar-content">
       {activePanel === 'properties' && (
-        <PropertiesPanel props={myProps} onEdit={onEditProp} onDelete={onDeleteProp} onFly={onFlyTo} onAdd={onAddProp} />
+        <PropertiesPanel props={myProps} onEdit={onEditProp} onDelete={onDeleteProp} onFly={onFlyTo} onAdd={onAddProp} t={t} />
       )}
 
       {activePanel === 'connections' && (
@@ -55,25 +56,25 @@ export default function Sidebar({ myProps, onOpenAuth, onEditProp, onDeleteProp,
           init={init} displayName={displayName} email={user?.email}
           profileName={profileName} setProfileName={setProfileName}
           profileBio={profileBio} setProfileBio={setProfileBio}
-          onSave={saveProfile} onSignOut={signOut}
+          onSave={saveProfile} onSignOut={signOut} t={t}
         />
       )}
     </div>
   )
 }
 
-function PropertiesPanel({ props, onEdit, onDelete, onFly, onAdd }) {
+function PropertiesPanel({ props, onEdit, onDelete, onFly, onAdd, t }) {
   if (!props.length) return (
     <div>
       <div className="panel-header">
-        <div className="panel-title">Mani \u012bpa\u0161umi</div>
-        <div className="panel-subtitle">\u012apa\u0161umi, ko esat pievienojis kartei</div>
+        <div className="panel-title">{t('props.title')}</div>
+        <div className="panel-subtitle">{t('props.subtitle')}</div>
       </div>
       <div className="empty-state">
-        <span className="emoji">&#127962;</span>
-        V\u0113l nav pievienotu \u012bpa\u0161umu.
+        <span className="emoji">{'\uD83C\uDFDA'}</span>
+        {t('props.empty')}
         <br />
-        <button className="btn-empty" onClick={onAdd}>&#xFF0B; Pievienot pirmo \u012bpa\u0161umu</button>
+        <button className="btn-empty" onClick={onAdd}>{t('props.addFirst')}</button>
       </div>
     </div>
   )
@@ -81,8 +82,8 @@ function PropertiesPanel({ props, onEdit, onDelete, onFly, onAdd }) {
   return (
     <div>
       <div className="panel-header">
-        <div className="panel-title">Mani \u012bpa\u0161umi</div>
-        <div className="panel-subtitle">{props.length} \u012bpa\u0161um{props.length === 1 ? 's' : 'i'}</div>
+        <div className="panel-title">{t('props.title')}</div>
+        <div className="panel-subtitle">{props.length} {props.length === 1 ? t('topbar.property') : t('topbar.properties')}</div>
       </div>
       <div className="prop-list">
         {props.map(p => (
@@ -104,9 +105,9 @@ function PropertiesPanel({ props, onEdit, onDelete, onFly, onAdd }) {
               </div>
             </div>
             <div className="prop-card-actions">
-              <button className="prop-card-btn" onClick={() => onEdit(p)}>&#9998; Redi\u0123\u0113t</button>
-              <button className="prop-card-btn" onClick={() => onDelete(p)}>&#128465; Dz\u0113st</button>
-              <button className="prop-card-btn" onClick={() => onFly(p)}>&#128506; Skat\u012bt</button>
+              <button className="prop-card-btn" onClick={() => onEdit(p)}>{t('props.edit')}</button>
+              <button className="prop-card-btn" onClick={() => onDelete(p)}>{t('props.delete')}</button>
+              <button className="prop-card-btn" onClick={() => onFly(p)}>{t('props.view')}</button>
             </div>
           </div>
         ))}
@@ -115,23 +116,23 @@ function PropertiesPanel({ props, onEdit, onDelete, onFly, onAdd }) {
   )
 }
 
-function ProfilePanel({ init, displayName, email, profileName, setProfileName, profileBio, setProfileBio, onSave, onSignOut }) {
+function ProfilePanel({ init, displayName, email, profileName, setProfileName, profileBio, setProfileBio, onSave, onSignOut, t }) {
   return (
     <div>
       <div className="panel-header">
-        <div className="panel-title">Mans profils</div>
-        <div className="panel-subtitle">J\u016bsu mantojuma profils</div>
+        <div className="panel-title">{t('profile.title')}</div>
+        <div className="panel-subtitle">{t('profile.subtitle')}</div>
       </div>
       <div className="profile-panel">
         <div className="profile-avatar-lg">{init}</div>
         <div className="profile-name-display">{displayName}</div>
         <div className="profile-email-display">{email}</div>
-        <label className="profile-field-label">V\u0101rds</label>
-        <input className="profile-input" type="text" value={profileName} onChange={e => setProfileName(e.target.value)} placeholder="J\u016bsu v\u0101rds" />
-        <label className="profile-field-label">Par j\u016bsu saikni ar Latviju</label>
-        <textarea className="profile-input" value={profileBio} onChange={e => setProfileBio(e.target.value)} placeholder="No kura re\u0123iona n\u0101ca j\u016bsu \u0123imene? Kad vi\u0146i emigr\u0113ja?" />
-        <button className="btn-save-profile" onClick={onSave}>Saglab\u0101t profilu</button>
-        <button className="btn-signout" onClick={onSignOut}>Izrakst\u012bties</button>
+        <label className="profile-field-label">{t('profile.nameLabel')}</label>
+        <input className="profile-input" type="text" value={profileName} onChange={e => setProfileName(e.target.value)} placeholder={t('profile.namePlaceholder')} />
+        <label className="profile-field-label">{t('profile.bioLabel')}</label>
+        <textarea className="profile-input" value={profileBio} onChange={e => setProfileBio(e.target.value)} placeholder={t('profile.bioPlaceholder')} />
+        <button className="btn-save-profile" onClick={onSave}>{t('profile.save')}</button>
+        <button className="btn-signout" onClick={onSignOut}>{t('profile.signout')}</button>
       </div>
     </div>
   )

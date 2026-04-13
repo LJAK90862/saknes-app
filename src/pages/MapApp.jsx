@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import { supabase } from '../lib/supabase'
-import { useAuth, useToast } from '../App'
+import { useAuth, useToast, useLang } from '../App'
 import Sidebar from '../components/Sidebar'
 import AuthModal from '../components/AuthModal'
 import PropertyModal from '../components/PropertyModal'
@@ -103,6 +103,7 @@ function PropertyMarkers({ properties, currentUser, onEdit, onDelete, friendIds 
 export default function MapApp() {
   const { user } = useAuth()
   const showToast = useToast()
+  const { lang, toggleLang, t } = useLang()
 
   const [allProps, setAllProps] = useState([])
   const [myProps, setMyProps] = useState([])
@@ -199,15 +200,15 @@ export default function MapApp() {
   async function handleDelete(prop) {
     await supabase.from('property_families').delete().eq('property_id', prop.id)
     const { error } = await supabase.from('properties').delete().eq('id', prop.id).eq('added_by', user.id)
-    if (error) { showToast('Could not delete', 'error'); return }
+    if (error) { showToast(t('toast.deleteError'), 'error'); return }
     setAllProps(prev => prev.filter(p => p.id !== prop.id))
     setMyProps(prev => prev.filter(p => p.id !== prop.id))
     setDeletingProp(null)
-    showToast('Deleted', 'success')
+    showToast(t('toast.deleted'), 'success')
   }
 
   function openAdd() {
-    if (!user) { setShowAuth(true); showToast('Please sign in to add a property', 'error'); return }
+    if (!user) { setShowAuth(true); showToast(t('toast.signInFirst'), 'error'); return }
     setEditingProp(null)
     setShowPropModal(true)
   }
@@ -238,23 +239,23 @@ export default function MapApp() {
       {/* ── TOPBAR ── */}
       <div className="topbar">
         <a className="topbar-home" href="https://saknes.org">
-          <span className="topbar-home-rune">ᛋ</span>
+          <img src="/saknes-logo.jpg" alt="Saknes" style={{ height: 32, width: 'auto' }} />
           <div>
             <div className="topbar-home-text">Saknes</div>
-            <div className="topbar-home-back">← Uz sākumu</div>
+            <div className="topbar-home-back">&larr; Uz s&#257;kumu</div>
           </div>
         </a>
 
         <div className="layer-toggle">
           <button className={`layer-btn ${layer === 'wig' ? 'active' : ''}`} onClick={() => setLayer('wig')}>1935</button>
-          <button className={`layer-btn ${layer === 'modern' ? 'active' : ''}`} onClick={() => setLayer('modern')}>Tagad</button>
+          <button className={`layer-btn ${layer === 'modern' ? 'active' : ''}`} onClick={() => setLayer('modern')}>{t('topbar.now')}</button>
         </div>
 
         <div className="search-wrap">
           <input
             className="search-input"
             type="text"
-            placeholder="Mekl&#275;t &#299;pa&#353;umus..."
+            placeholder={t('topbar.search')}
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             onBlur={() => setTimeout(() => setShowSearch(false), 180)}
@@ -264,7 +265,7 @@ export default function MapApp() {
           {showSearch && (
             <div className="search-drop">
               {searchResults.length === 0
-                ? <div className="search-no-results">Nav atrasts</div>
+                ? <div className="search-no-results">{t('topbar.searchEmpty')}</div>
                 : searchResults.map(p => (
                   <div key={p.id} className="search-item" onMouseDown={() => handleSearchSelect(p)}>
                     <div className="search-item-addr">{p.address}</div>
@@ -277,17 +278,18 @@ export default function MapApp() {
         </div>
 
         <div className="fam-toggle-wrap">
-          <span className="fam-toggle-label">Visas &#291;imenes</span>
+          <span className="fam-toggle-label">{t('topbar.allFamilies')}</span>
           <label className="toggle-sw">
             <input type="checkbox" checked={showMineOnly} disabled={!user} onChange={e => setShowMineOnly(e.target.checked)} />
             <span className="toggle-track" />
           </label>
-          <span className="fam-toggle-label mine">Mana &#291;imene</span>
+          <span className="fam-toggle-label mine">{t('topbar.myFamily')}</span>
         </div>
 
-        <span className="pin-count">{displayedProps.length} &#299;pa&#353;um{displayedProps.length === 1 ? 's' : 'i'}</span>
+        <span className="pin-count">{displayedProps.length} {displayedProps.length === 1 ? t('topbar.property') : t('topbar.properties')}</span>
         <div className="topbar-spacer" />
-        <button className="btn-add" onClick={openAdd}>&#xFF0B; Pievienot</button>
+        <button className="lang-toggle" onClick={toggleLang}>{lang === 'lv' ? 'EN' : 'LV'}</button>
+        <button className="btn-add" onClick={openAdd}>{t('topbar.add')}</button>
       </div>
 
       {/* ── HEADER NAV ── */}
@@ -295,22 +297,25 @@ export default function MapApp() {
         {user ? (
           <>
             {[
-              { id: 'properties', icon: '&#127968;', label: 'Mani &#299;pa&#353;umi', count: myProps.length },
-              { id: 'connections', icon: '&#128279;', label: 'Draugi' },
-              { id: 'chat', icon: '&#128172;', label: 'Sarunas', count: unreadCount },
-              { id: 'profile', icon: '&#128100;', label: 'Profils' },
+              { id: 'properties', icon: '\uD83C\uDFE0', label: t('nav.properties'), count: myProps.length },
+              { id: 'connections', icon: '\uD83D\uDD17', label: t('nav.friends') },
+              { id: 'chat', icon: '\uD83D\uDCAC', label: t('nav.chat'), count: unreadCount },
+              { id: 'profile', icon: '\uD83D\uDC64', label: t('nav.profile') },
             ].map(item => (
               <button
                 key={item.id}
                 className={`header-nav-btn ${activePanel === item.id ? 'active' : ''}`}
                 onClick={() => togglePanel(item.id)}
-                dangerouslySetInnerHTML={{ __html: `<span class="header-nav-icon">${item.icon}</span>${item.label}${item.count ? `<span class="header-nav-badge">${item.count}</span>` : ''}` }}
-              />
+              >
+                <span className="header-nav-icon">{item.icon}</span>
+                {item.label}
+                {item.count ? <span className="header-nav-badge">{item.count}</span> : null}
+              </button>
             ))}
           </>
         ) : (
           <button className="header-nav-btn" onClick={() => setShowAuth(true)}>
-            <span className="header-nav-icon">&#128100;</span>Ielogoties / Re&#291;istr&#275;ties
+            <span className="header-nav-icon">{'\uD83D\uDC64'}</span>{t('nav.signin')}
           </button>
         )}
       </div>
@@ -373,17 +378,17 @@ export default function MapApp() {
           <div className="modal-box" style={{ maxWidth: 340 }}>
             <div className="modal-hdr">
               <div>
-                <div className="modal-hdr-title">Delete this property?</div>
-                <div className="modal-hdr-sub">This cannot be undone</div>
+                <div className="modal-hdr-title">{t('delete.title')}</div>
+                <div className="modal-hdr-sub">{t('delete.subtitle')}</div>
               </div>
               <button className="modal-close" onClick={() => setDeletingProp(null)}>✕</button>
             </div>
             <div className="modal-bdy">
-              <p className="confirm-body">This will permanently remove the property and all associated family records from the map.</p>
+              <p className="confirm-body">{t('delete.body')}</p>
             </div>
             <div className="modal-ftr">
-              <button className="btn-cancel" onClick={() => setDeletingProp(null)}>Cancel</button>
-              <button className="btn-delete" onClick={() => handleDelete(deletingProp)}>Delete</button>
+              <button className="btn-cancel" onClick={() => setDeletingProp(null)}>{t('delete.cancel')}</button>
+              <button className="btn-delete" onClick={() => handleDelete(deletingProp)}>{t('delete.confirm')}</button>
             </div>
           </div>
         </div>

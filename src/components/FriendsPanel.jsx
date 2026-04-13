@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
-import { useAuth, useToast } from '../App'
+import { useAuth, useToast, useLang } from '../App'
 import AddFriendModal from './AddFriendModal'
 
 export default function FriendsPanel({ onFriendsChanged }) {
   const { user } = useAuth()
   const showToast = useToast()
+  const { t } = useLang()
   const [friends, setFriends] = useState([])
   const [pending, setPending] = useState([])
   const [showAddModal, setShowAddModal] = useState(false)
@@ -61,35 +62,35 @@ export default function FriendsPanel({ onFriendsChanged }) {
 
   async function acceptRequest(friendshipId) {
     await supabase.from('friendships').update({ status: 'accepted' }).eq('id', friendshipId)
-    showToast('Drauga piepras\u012bjums pie\u0146emts', 'success')
+    showToast(t('friends.accepted'), 'success')
     loadFriends()
     onFriendsChanged?.()
   }
 
   async function declineRequest(friendshipId) {
     await supabase.from('friendships').delete().eq('id', friendshipId)
-    showToast('Piepras\u012bjums noraid\u012bts')
+    showToast(t('friends.declined'))
     loadFriends()
     onFriendsChanged?.()
   }
 
   async function removeFriend(friendshipId) {
     await supabase.from('friendships').delete().eq('id', friendshipId)
-    showToast('Draugs no\u0146emts')
+    showToast(t('friends.removed'))
     loadFriends()
     onFriendsChanged?.()
   }
 
-  if (loading) return <div className="coming-soon"><span className="coming-soon-icon">🔗</span><div className="coming-soon-body">Iel\u0101d\u0113 savienojumus...</div></div>
+  if (loading) return <div className="coming-soon"><span className="coming-soon-icon">{'\uD83D\uDD17'}</span><div className="coming-soon-body">{t('friends.loading')}</div></div>
 
   return (
     <div>
       <div className="panel-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <div className="panel-title">Mani draugi</div>
-          <div className="panel-subtitle">{friends.length} draug{friends.length === 1 ? 's' : 'i'}</div>
+          <div className="panel-title">{t('friends.title')}</div>
+          <div className="panel-subtitle">{friends.length} {friends.length === 1 ? 'friend' : 'friends'}</div>
         </div>
-        <button className="btn-empty" onClick={() => setShowAddModal(true)} style={{ margin: 0, padding: '5px 12px', fontSize: '.7rem' }}>＋ Add</button>
+        <button className="btn-empty" onClick={() => setShowAddModal(true)} style={{ margin: 0, padding: '5px 12px', fontSize: '.7rem' }}>{t('friends.add')}</button>
       </div>
 
       {pending.length > 0 && (
