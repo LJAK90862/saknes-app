@@ -120,8 +120,34 @@ body {
 /* ── MAP BODY ── */
 .map-body { flex: 1; display: flex; overflow: hidden; }
 
-/* ── SIDEBAR ── */
-.sidebar {
+/* ── HEADER NAV ── */
+.header-nav {
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 0;
+  flex-shrink: 0;
+  overflow-x: auto;
+}
+.header-nav-btn {
+  background: none; border: none; border-bottom: 2.5px solid transparent;
+  padding: 10px 16px; font-family: 'Crimson Pro', serif; font-size: .82rem;
+  color: var(--ink-light); cursor: pointer; transition: all .15s;
+  display: flex; align-items: center; gap: 7px; white-space: nowrap;
+  margin-bottom: -1px;
+}
+.header-nav-btn:hover { color: var(--ink); background: var(--off-white); }
+.header-nav-btn.active { color: var(--carmine); border-bottom-color: var(--carmine); font-weight: 600; }
+.header-nav-icon { font-size: .95rem; }
+.header-nav-badge {
+  font-size: .62rem; background: var(--carmine); color: white;
+  padding: 1px 6px; border-radius: 10px; font-weight: 600; min-width: 18px; text-align: center;
+}
+
+/* ── SIDE PANEL (collapsible) ── */
+.side-panel {
   width: var(--sidebar-w);
   flex-shrink: 0;
   background: var(--white);
@@ -129,52 +155,15 @@ body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  position: relative;
 }
-
-.sidebar-user {
-  padding: 14px 16px;
-  border-bottom: 1px solid var(--border);
-  background: var(--carmine);
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-shrink: 0;
+.side-panel-close {
+  position: absolute; top: 8px; right: 8px; z-index: 2;
+  background: none; border: none; font-size: 1rem; cursor: pointer;
+  color: var(--ink-light); padding: 4px 8px;
 }
-.sidebar-avatar {
-  width: 36px; height: 36px; border-radius: 50%;
-  background: rgba(255,255,255,.2);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1rem; color: white; flex-shrink: 0;
-  font-family: 'IM Fell English', serif;
-}
-.sidebar-user-name { font-size: .82rem; color: white; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.sidebar-user-sub { font-size: .65rem; color: rgba(255,255,255,.65); }
-.sidebar-signin-btn {
-  width: 100%; background: white; color: var(--carmine); border: none;
-  padding: 12px 16px; font-family: 'Crimson Pro', serif; font-size: .82rem;
-  letter-spacing: .04em; cursor: pointer; font-weight: 600; text-align: center; line-height: 1.4;
-}
-.sidebar-signin-btn:hover { background: var(--linen); }
-
-.sidebar-nav { padding: 8px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
-.sb-btn {
-  width: 100%; background: none; border: none; text-align: left;
-  padding: 9px 12px; font-family: 'Crimson Pro', serif; font-size: .88rem;
-  color: var(--ink-light); cursor: pointer; transition: all .15s;
-  display: flex; align-items: center; gap: 10px;
-  border-radius: 2px; margin-bottom: 2px;
-}
-.sb-btn:hover { background: var(--off-white); color: var(--ink); }
-.sb-btn.active { background: var(--carmine); color: white; font-weight: 600; }
-.sb-icon { font-size: 1rem; width: 20px; text-align: center; flex-shrink: 0; }
-.sb-count {
-  margin-left: auto; font-size: .7rem;
-  background: rgba(155,27,48,.12); color: var(--carmine);
-  padding: 1px 7px; border-radius: 10px;
-}
-.sb-btn.active .sb-count { background: rgba(255,255,255,.2); color: white; }
-
-.sidebar-panel { flex: 1; overflow-y: auto; }
+.side-panel-close:hover { color: var(--carmine); }
+.sidebar-content { flex: 1; overflow-y: auto; }
 .panel-header { padding: 14px 16px 10px; border-bottom: 1px solid var(--border); background: var(--off-white); flex-shrink: 0; }
 .panel-title { font-family: 'IM Fell English', serif; font-size: 1.05rem; color: var(--ink); }
 .panel-subtitle { font-size: .7rem; color: var(--ink-light); margin-top: 2px; }

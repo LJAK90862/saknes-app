@@ -10,8 +10,8 @@ export default function AddFriendModal({ onClose, onSent }) {
   const [loading, setLoading] = useState(false)
 
   async function handleSubmit() {
-    if (!email.trim()) { setError('Please enter an email address'); return }
-    if (email.trim().toLowerCase() === user.email.toLowerCase()) { setError("You can't add yourself"); return }
+    if (!email.trim()) { setError('L\u016bdzu ievadiet e-pasta adresi'); return }
+    if (email.trim().toLowerCase() === user.email.toLowerCase()) { setError('Nevar pievienot sevi'); return }
 
     setLoading(true)
     setError('')
@@ -20,7 +20,7 @@ export default function AddFriendModal({ onClose, onSent }) {
     const { data: found, error: rpcError } = await supabase.rpc('find_user_by_email', { lookup_email: email.trim().toLowerCase() })
 
     if (rpcError || !found || found.length === 0) {
-      setError('No Saknes user found with that email')
+      setError('Nav atrasts Saknes lietot\u0101js ar \u0161o e-pastu')
       setLoading(false)
       return
     }
@@ -35,7 +35,7 @@ export default function AddFriendModal({ onClose, onSent }) {
 
     if (existing && existing.length > 0) {
       const status = existing[0].status
-      setError(status === 'accepted' ? 'Already friends' : status === 'pending' ? 'Request already sent' : 'Request already exists')
+      setError(status === 'accepted' ? 'Jau ir draugi' : status === 'pending' ? 'Piepras\u012bjums jau nos\u016bt\u012bts' : 'Piepras\u012bjums jau past\u0101v')
       setLoading(false)
       return
     }
@@ -47,12 +47,12 @@ export default function AddFriendModal({ onClose, onSent }) {
     })
 
     if (insertError) {
-      setError('Failed to send request')
+      setError('Neizdev\u0101s nos\u016bt\u012bt piepras\u012bjumu')
       setLoading(false)
       return
     }
 
-    showToast(`Friend request sent to ${found[0].display_name || email}`, 'success')
+    showToast(`Piepras\u012bjums nos\u016bt\u012bts: ${found[0].display_name || email}`, 'success')
     setLoading(false)
     onSent()
   }
@@ -62,14 +62,14 @@ export default function AddFriendModal({ onClose, onSent }) {
       <div className="modal-box" style={{ maxWidth: 390 }}>
         <div className="modal-hdr">
           <div>
-            <div className="modal-hdr-title">Add a Friend</div>
-            <div className="modal-hdr-sub">Search by email address</div>
+            <div className="modal-hdr-title">Pievienot draugu</div>
+            <div className="modal-hdr-sub">Mekl&#275;t p&#275;c e-pasta adreses</div>
           </div>
           <button className="modal-close" onClick={onClose}>✕</button>
         </div>
         <div className="modal-bdy">
           <div className="auth-field">
-            <label className="auth-label">Friend's Email</label>
+            <label className="auth-label">Drauga e-pasts</label>
             <input
               className="auth-input"
               type="email"
@@ -82,9 +82,9 @@ export default function AddFriendModal({ onClose, onSent }) {
           {error && <div className="auth-error">{error}</div>}
         </div>
         <div className="modal-ftr">
-          <button className="btn-cancel" onClick={onClose}>Cancel</button>
+          <button className="btn-cancel" onClick={onClose}>Atcelt</button>
           <button className="btn-submit" onClick={handleSubmit} disabled={loading}>
-            {loading ? 'Searching…' : 'Send Request'}
+            {loading ? 'Mekl\u0113...' : 'Nos\u016bt\u012bt piepras\u012bjumu'}
           </button>
         </div>
       </div>

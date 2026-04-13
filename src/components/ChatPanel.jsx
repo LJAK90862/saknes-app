@@ -118,7 +118,7 @@ export default function ChatPanel({ friendIds }) {
       receiver_id: activeChat.userId,
       body: newMsg.trim()
     })
-    if (error) { showToast('Failed to send', 'error'); setSending(false); return }
+    if (error) { showToast('Neizdev\u0101s nos\u016bt\u012bt', 'error'); setSending(false); return }
     setMessages(prev => [...prev, { sender_id: user.id, receiver_id: activeChat.userId, body: newMsg.trim(), created_at: new Date().toISOString(), read: false }])
     setNewMsg('')
     setSending(false)
@@ -139,14 +139,14 @@ export default function ChatPanel({ friendIds }) {
     return (
       <div>
         <div className="panel-header">
-          <div className="panel-title">Chat</div>
-          <div className="panel-subtitle">Message your connections</div>
+          <div className="panel-title">Sarunas</div>
+          <div className="panel-subtitle">Rakstiet saviem draugiem</div>
         </div>
 
         {conversations.length === 0 ? (
           <div className="empty-state">
-            <span className="emoji">💬</span>
-            No conversations yet.<br />Add a friend and start chatting about your shared heritage.
+            <span className="emoji">&#128172;</span>
+            V&#275;l nav sarunu.<br />Pievienojiet draugu un s&#257;ciet sarun&#257;ties par kop&#299;go mantojumu.
           </div>
         ) : (
           <div className="chat-list">
@@ -183,7 +183,7 @@ export default function ChatPanel({ friendIds }) {
       <div className="chat-messages">
         {messages.length === 0 && (
           <div style={{ textAlign: 'center', color: 'var(--ink-light)', fontSize: '.82rem', padding: '32px 16px' }}>
-            No messages yet. Say hello!
+            V&#275;l nav zi&#326;u. Sakiet sveiki!
           </div>
         )}
         {messages.map((m, i) => (
@@ -198,13 +198,13 @@ export default function ChatPanel({ friendIds }) {
       <div className="chat-input-bar">
         <textarea
           className="chat-input"
-          placeholder="Type a message…"
+          placeholder="Rakst&#299;t zi&#326;u..."
           value={newMsg}
           onChange={e => setNewMsg(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage() } }}
           rows={1}
         />
-        <button className="chat-send-btn" onClick={sendMessage} disabled={sending || !newMsg.trim()}>Send</button>
+        <button className="chat-send-btn" onClick={sendMessage} disabled={sending || !newMsg.trim()}>S&#363;t&#299;t</button>
       </div>
     </div>
   )

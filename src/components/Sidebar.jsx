@@ -4,127 +4,60 @@ import { useAuth, useToast } from '../App'
 import FriendsPanel from './FriendsPanel'
 import ChatPanel from './ChatPanel'
 
-export default function Sidebar({ myProps, onOpenAuth, onEditProp, onDeleteProp, onFlyTo, onAddProp, friendIds, unreadCount, onFriendsChanged }) {
+export default function Sidebar({ myProps, onOpenAuth, onEditProp, onDeleteProp, onFlyTo, onAddProp, friendIds, unreadCount, onFriendsChanged, activePanel }) {
   const { user } = useAuth()
   const showToast = useToast()
-  const [activePanel, setActivePanel] = useState('properties')
   const [profileName, setProfileName] = useState('')
   const [profileBio, setProfileBio] = useState('')
-  const [pendingCount, setPendingCount] = useState(0)
 
   useEffect(() => {
     if (!user) return
-    setActivePanel('properties')
-    // Load profile from Supabase
     supabase.from('profiles').select('*').eq('id', user.id).single().then(({ data }) => {
       if (data) {
         setProfileName(data.display_name || user.email.split('@')[0])
         setProfileBio(data.bio || '')
       }
     })
-    // Load pending friend request count
-    supabase.from('friendships').select('id', { count: 'exact' })
-      .eq('addressee_id', user.id).eq('status', 'pending')
-      .then(({ count }) => setPendingCount(count || 0))
   }, [user])
 
   async function saveProfile() {
     const { error } = await supabase.from('profiles').upsert({
       id: user.id, display_name: profileName, bio: profileBio, updated_at: new Date().toISOString()
     })
-    if (error) { showToast('Error saving profile', 'error'); return }
-    showToast('Profile saved', 'success')
+    if (error) { showToast('K\u013c\u016bda saglab\u0101jot', 'error'); return }
+    showToast('Profils saglab\u0101ts', 'success')
   }
 
   async function signOut() {
     await supabase.auth.signOut()
-    showToast('Signed out')
+    showToast('Izrakst\u012bj\u0101ties')
   }
 
   const init = user ? user.email[0].toUpperCase() : '?'
-  const displayName = user ? (localStorage.getItem(`saknes_name_${user.id}`) || user.email.split('@')[0]) : ''
+  const displayName = profileName || (user ? user.email.split('@')[0] : '')
 
   return (
-    <div className="sidebar">
-      {/* User area */}
-      <div className="sidebar-user">
-        {user ? (
-          <>
-            <div className="sidebar-avatar">{init}</div>
-            <div style={{ flex: 1, overflow: 'hidden' }}>
-              <div className="sidebar-user-name">{displayName}</div>
-              <div className="sidebar-user-sub">{user.email}</div>
-            </div>
-          </>
-        ) : (
-          <button className="sidebar-signin-btn" onClick={onOpenAuth}>
-            Sign In / Register to track your family
-          </button>
-        )}
-      </div>
-
-      {/* Nav buttons — only when logged in */}
-      {user && (
-        <div className="sidebar-nav">
-          {[
-            { id: 'properties', icon: '🏠', label: 'My Properties', count: myProps.length },
-            { id: 'connections', icon: '🔗', label: 'My Connections', count: pendingCount || undefined },
-            { id: 'chat', icon: '💬', label: 'Chat', count: unreadCount || undefined },
-            { id: 'profile', icon: '👤', label: 'My Profile' },
-            { id: 'ancestors', icon: '🌳', label: 'My Ancestors' },
-          ].map(item => (
-            <button
-              key={item.id}
-              className={`sb-btn ${activePanel === item.id ? 'active' : ''}`}
-              onClick={() => setActivePanel(item.id)}
-            >
-              <span className="sb-icon">{item.icon}</span>
-              {item.label}
-              {item.count !== undefined && (
-                <span className="sb-count">{item.count}</span>
-              )}
-            </button>
-          ))}
-        </div>
+    <div className="sidebar-content">
+      {activePanel === 'properties' && (
+        <PropertiesPanel props={myProps} onEdit={onEditProp} onDelete={onDeleteProp} onFly={onFlyTo} onAdd={onAddProp} />
       )}
 
-      {/* Panel content */}
-      <div className="sidebar-panel">
-        {!user && (
-          <div className="coming-soon">
-            <span className="coming-soon-icon">🗺</span>
-            <div className="coming-soon-title">Welcome to Saknes</div>
-            <div className="coming-soon-body">Explore the 1935 map of Latvia. Sign in to add your family properties and track your heritage.</div>
-          </div>
-        )}
+      {activePanel === 'connections' && (
+        <FriendsPanel onFriendsChanged={onFriendsChanged} />
+      )}
 
-        {user && activePanel === 'properties' && (
-          <PropertiesPanel props={myProps} onEdit={onEditProp} onDelete={onDeleteProp} onFly={onFlyTo} onAdd={onAddProp} />
-        )}
+      {activePanel === 'chat' && (
+        <ChatPanel friendIds={friendIds} />
+      )}
 
-        {user && activePanel === 'profile' && (
-          <ProfilePanel
-            init={init} displayName={displayName} email={user.email}
-            profileName={profileName} setProfileName={setProfileName}
-            profileBio={profileBio} setProfileBio={setProfileBio}
-            onSave={saveProfile} onSignOut={signOut}
-          />
-        )}
-
-        {user && activePanel === 'connections' && (
-          <FriendsPanel onFriendsChanged={() => { onFriendsChanged?.(); supabase.from('friendships').select('id', { count: 'exact' }).eq('addressee_id', user.id).eq('status', 'pending').then(({ count }) => setPendingCount(count || 0)) }} />
-        )}
-
-        {user && activePanel === 'chat' && (
-          <ChatPanel friendIds={friendIds} />
-        )}
-
-        {user && activePanel === 'ancestors' && (
-          <ComingSoon icon="🌳" title="My Ancestors"
-            body="Build your family tree and link ancestors to properties on the map."
-            note="Coming soon — ancestor records and family tree tools are in development." />
-        )}
-      </div>
+      {activePanel === 'profile' && (
+        <ProfilePanel
+          init={init} displayName={displayName} email={user?.email}
+          profileName={profileName} setProfileName={setProfileName}
+          profileBio={profileBio} setProfileBio={setProfileBio}
+          onSave={saveProfile} onSignOut={signOut}
+        />
+      )}
     </div>
   )
 }
@@ -133,14 +66,14 @@ function PropertiesPanel({ props, onEdit, onDelete, onFly, onAdd }) {
   if (!props.length) return (
     <div>
       <div className="panel-header">
-        <div className="panel-title">My Properties</div>
-        <div className="panel-subtitle">Properties you have added to the map</div>
+        <div className="panel-title">Mani \u012bpa\u0161umi</div>
+        <div className="panel-subtitle">\u012apa\u0161umi, ko esat pievienojis kartei</div>
       </div>
       <div className="empty-state">
-        <span className="emoji">🏚</span>
-        No properties added yet.
+        <span className="emoji">&#127962;</span>
+        V\u0113l nav pievienotu \u012bpa\u0161umu.
         <br />
-        <button className="btn-empty" onClick={onAdd}>＋ Add My First Property</button>
+        <button className="btn-empty" onClick={onAdd}>&#xFF0B; Pievienot pirmo \u012bpa\u0161umu</button>
       </div>
     </div>
   )
@@ -148,20 +81,20 @@ function PropertiesPanel({ props, onEdit, onDelete, onFly, onAdd }) {
   return (
     <div>
       <div className="panel-header">
-        <div className="panel-title">My Properties</div>
-        <div className="panel-subtitle">{props.length} propert{props.length === 1 ? 'y' : 'ies'} added</div>
+        <div className="panel-title">Mani \u012bpa\u0161umi</div>
+        <div className="panel-subtitle">{props.length} \u012bpa\u0161um{props.length === 1 ? 's' : 'i'}</div>
       </div>
       <div className="prop-list">
         {props.map(p => (
           <div className="prop-card" key={p.id}>
             <div className="prop-card-top" onClick={() => onFly(p)}>
               <div className="prop-card-img">
-                {p.photo_url ? <img src={p.photo_url} alt="" /> : '🏠'}
+                {p.photo_url ? <img src={p.photo_url} alt="" /> : '&#127968;'}
               </div>
               <div>
                 <div className="prop-card-addr">{p.address}</div>
                 <div className="prop-card-meta">
-                  {p.parish || ''} {p.period ? '· ' + p.period : ''}
+                  {p.parish || ''} {p.period ? '\u00b7 ' + p.period : ''}
                 </div>
                 <div className="prop-card-chips">
                   {(p.property_families || []).map((f, i) => (
@@ -171,9 +104,9 @@ function PropertiesPanel({ props, onEdit, onDelete, onFly, onAdd }) {
               </div>
             </div>
             <div className="prop-card-actions">
-              <button className="prop-card-btn" onClick={() => onEdit(p)}>✏ Edit</button>
-              <button className="prop-card-btn" onClick={() => onDelete(p)}>🗑 Delete</button>
-              <button className="prop-card-btn" onClick={() => onFly(p)}>🗺 View</button>
+              <button className="prop-card-btn" onClick={() => onEdit(p)}>&#9998; Redi\u0123\u0113t</button>
+              <button className="prop-card-btn" onClick={() => onDelete(p)}>&#128465; Dz\u0113st</button>
+              <button className="prop-card-btn" onClick={() => onFly(p)}>&#128506; Skat\u012bt</button>
             </div>
           </div>
         ))}
@@ -186,35 +119,19 @@ function ProfilePanel({ init, displayName, email, profileName, setProfileName, p
   return (
     <div>
       <div className="panel-header">
-        <div className="panel-title">My Profile</div>
-        <div className="panel-subtitle">Your heritage profile</div>
+        <div className="panel-title">Mans profils</div>
+        <div className="panel-subtitle">J\u016bsu mantojuma profils</div>
       </div>
       <div className="profile-panel">
         <div className="profile-avatar-lg">{init}</div>
         <div className="profile-name-display">{displayName}</div>
         <div className="profile-email-display">{email}</div>
-        <label className="profile-field-label">Display Name</label>
-        <input className="profile-input" type="text" value={profileName} onChange={e => setProfileName(e.target.value)} placeholder="Your name" />
-        <label className="profile-field-label">About your connection to Latvia</label>
-        <textarea className="profile-input" value={profileBio} onChange={e => setProfileBio(e.target.value)} placeholder="Which region did your family come from? When did they emigrate? What do you know so far…" />
-        <button className="btn-save-profile" onClick={onSave}>Save Profile</button>
-        <button className="btn-signout" onClick={onSignOut}>Sign Out</button>
-      </div>
-    </div>
-  )
-}
-
-function ComingSoon({ icon, title, body, note }) {
-  return (
-    <div>
-      <div className="panel-header">
-        <div className="panel-title">{title}</div>
-      </div>
-      <div className="coming-soon">
-        <span className="coming-soon-icon">{icon}</span>
-        <div className="coming-soon-title">{title}</div>
-        <div className="coming-soon-body">{body}</div>
-        <div className="coming-soon-note">{note}</div>
+        <label className="profile-field-label">V\u0101rds</label>
+        <input className="profile-input" type="text" value={profileName} onChange={e => setProfileName(e.target.value)} placeholder="J\u016bsu v\u0101rds" />
+        <label className="profile-field-label">Par j\u016bsu saikni ar Latviju</label>
+        <textarea className="profile-input" value={profileBio} onChange={e => setProfileBio(e.target.value)} placeholder="No kura re\u0123iona n\u0101ca j\u016bsu \u0123imene? Kad vi\u0146i emigr\u0113ja?" />
+        <button className="btn-save-profile" onClick={onSave}>Saglab\u0101t profilu</button>
+        <button className="btn-signout" onClick={onSignOut}>Izrakst\u012bties</button>
       </div>
     </div>
   )

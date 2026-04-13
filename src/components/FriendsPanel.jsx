@@ -16,7 +16,7 @@ export default function FriendsPanel({ onFriendsChanged }) {
   async function loadFriends() {
     setLoading(true)
 
-    // Accepted friends
+    // Pie\u0146emted friends
     const { data: accepted } = await supabase
       .from('friendships')
       .select('id, requester_id, addressee_id')
@@ -61,40 +61,40 @@ export default function FriendsPanel({ onFriendsChanged }) {
 
   async function acceptRequest(friendshipId) {
     await supabase.from('friendships').update({ status: 'accepted' }).eq('id', friendshipId)
-    showToast('Friend request accepted', 'success')
+    showToast('Drauga piepras\u012bjums pie\u0146emts', 'success')
     loadFriends()
     onFriendsChanged?.()
   }
 
   async function declineRequest(friendshipId) {
     await supabase.from('friendships').delete().eq('id', friendshipId)
-    showToast('Request declined')
+    showToast('Piepras\u012bjums noraid\u012bts')
     loadFriends()
     onFriendsChanged?.()
   }
 
   async function removeFriend(friendshipId) {
     await supabase.from('friendships').delete().eq('id', friendshipId)
-    showToast('Friend removed')
+    showToast('Draugs no\u0146emts')
     loadFriends()
     onFriendsChanged?.()
   }
 
-  if (loading) return <div className="coming-soon"><span className="coming-soon-icon">🔗</span><div className="coming-soon-body">Loading connections...</div></div>
+  if (loading) return <div className="coming-soon"><span className="coming-soon-icon">🔗</span><div className="coming-soon-body">Iel\u0101d\u0113 savienojumus...</div></div>
 
   return (
     <div>
       <div className="panel-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <div className="panel-title">My Connections</div>
-          <div className="panel-subtitle">{friends.length} friend{friends.length !== 1 ? 's' : ''}</div>
+          <div className="panel-title">Mani draugi</div>
+          <div className="panel-subtitle">{friends.length} draug{friends.length === 1 ? 's' : 'i'}</div>
         </div>
         <button className="btn-empty" onClick={() => setShowAddModal(true)} style={{ margin: 0, padding: '5px 12px', fontSize: '.7rem' }}>＋ Add</button>
       </div>
 
       {pending.length > 0 && (
         <div style={{ padding: '10px', borderBottom: '1px solid var(--border)', background: 'var(--linen)' }}>
-          <div style={{ fontSize: '.68rem', fontWeight: 600, color: 'var(--carmine)', textTransform: 'uppercase', letterSpacing: '.08em', marginBottom: '8px' }}>Pending Requests</div>
+          <div style={{ fontSize: '.68rem', fontWeight: 600, color: 'var(--carmine)', textTransform: 'uppercase', letterSpacing: '.08em', marginBottom: '8px' }}>Gaido\u0161ie piepras\u012bjumi</div>
           {pending.map(p => (
             <div key={p.friendshipId} className="friend-card">
               <div className="friend-card-top">
@@ -104,8 +104,8 @@ export default function FriendsPanel({ onFriendsChanged }) {
                 </div>
               </div>
               <div className="prop-card-actions">
-                <button className="prop-card-btn" onClick={() => acceptRequest(p.friendshipId)} style={{ color: 'var(--carmine)', fontWeight: 600 }}>✓ Accept</button>
-                <button className="prop-card-btn" onClick={() => declineRequest(p.friendshipId)}>✕ Decline</button>
+                <button className="prop-card-btn" onClick={() => acceptRequest(p.friendshipId)} style={{ color: 'var(--carmine)', fontWeight: 600 }}>✓ Pie\u0146emt</button>
+                <button className="prop-card-btn" onClick={() => declineRequest(p.friendshipId)}>✕ Noraid\u012bt</button>
               </div>
             </div>
           ))}
@@ -116,8 +116,8 @@ export default function FriendsPanel({ onFriendsChanged }) {
         {friends.length === 0 && pending.length === 0 ? (
           <div className="empty-state">
             <span className="emoji">🔗</span>
-            No connections yet.<br />Add a friend by their email to see their family properties on the map.
-            <br /><button className="btn-empty" onClick={() => setShowAddModal(true)}>＋ Add a Friend</button>
+            V&#275;l nav draugu.<br />Pievienojiet draugu p&#275;c e-pasta, lai redz&#275;tu vi&#326;u &#291;imenes &#299;pa&#353;umus kart&#275;.
+            <br /><button className="btn-empty" onClick={() => setShowAddModal(true)}>&#xFF0B; Pievienot draugu</button>
           </div>
         ) : (
           friends.map(f => (
@@ -130,7 +130,7 @@ export default function FriendsPanel({ onFriendsChanged }) {
                 </div>
               </div>
               <div className="prop-card-actions">
-                <button className="prop-card-btn" onClick={() => removeFriend(f.friendshipId)}>Remove</button>
+                <button className="prop-card-btn" onClick={() => removeFriend(f.friendshipId)}>No\u0146emt</button>
               </div>
             </div>
           ))

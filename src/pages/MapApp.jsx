@@ -227,6 +227,12 @@ export default function MapApp() {
   const famSet = new Set(allProps.flatMap(p => (p.property_families || []).map(f => f.name)))
   const regSet = new Set(allProps.map(p => p.parish?.split(' ')[0]).filter(Boolean))
 
+  const [activePanel, setActivePanel] = useState(null)
+
+  function togglePanel(panel) {
+    setActivePanel(prev => prev === panel ? null : panel)
+  }
+
   return (
     <div className="app">
       {/* ── TOPBAR ── */}
@@ -235,30 +241,30 @@ export default function MapApp() {
           <span className="topbar-home-rune">ᛋ</span>
           <div>
             <div className="topbar-home-text">Saknes</div>
-            <div className="topbar-home-back">← Back to home</div>
+            <div className="topbar-home-back">← Uz sākumu</div>
           </div>
         </a>
 
         <div className="layer-toggle">
           <button className={`layer-btn ${layer === 'wig' ? 'active' : ''}`} onClick={() => setLayer('wig')}>1935</button>
-          <button className={`layer-btn ${layer === 'modern' ? 'active' : ''}`} onClick={() => setLayer('modern')}>Now</button>
+          <button className={`layer-btn ${layer === 'modern' ? 'active' : ''}`} onClick={() => setLayer('modern')}>Tagad</button>
         </div>
 
         <div className="search-wrap">
           <input
             className="search-input"
             type="text"
-            placeholder="Search properties…"
+            placeholder="Mekl&#275;t &#299;pa&#353;umus..."
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             onBlur={() => setTimeout(() => setShowSearch(false), 180)}
             onFocus={() => searchResults.length && setShowSearch(true)}
           />
-          <span className="search-icon">🔍</span>
+          <span className="search-icon">&#128269;</span>
           {showSearch && (
             <div className="search-drop">
               {searchResults.length === 0
-                ? <div className="search-no-results">No properties found</div>
+                ? <div className="search-no-results">Nav atrasts</div>
                 : searchResults.map(p => (
                   <div key={p.id} className="search-item" onMouseDown={() => handleSearchSelect(p)}>
                     <div className="search-item-addr">{p.address}</div>
@@ -271,37 +277,63 @@ export default function MapApp() {
         </div>
 
         <div className="fam-toggle-wrap">
-          <span className="fam-toggle-label">All families</span>
+          <span className="fam-toggle-label">Visas &#291;imenes</span>
           <label className="toggle-sw">
-            <input
-              type="checkbox"
-              checked={showMineOnly}
-              disabled={!user}
-              onChange={e => setShowMineOnly(e.target.checked)}
-            />
+            <input type="checkbox" checked={showMineOnly} disabled={!user} onChange={e => setShowMineOnly(e.target.checked)} />
             <span className="toggle-track" />
           </label>
-          <span className="fam-toggle-label mine">My family</span>
+          <span className="fam-toggle-label mine">Mana &#291;imene</span>
         </div>
 
-        <span className="pin-count">{displayedProps.length} propert{displayedProps.length === 1 ? 'y' : 'ies'}</span>
+        <span className="pin-count">{displayedProps.length} &#299;pa&#353;um{displayedProps.length === 1 ? 's' : 'i'}</span>
         <div className="topbar-spacer" />
-        <button className="btn-add" onClick={openAdd}>＋ Add Property</button>
+        <button className="btn-add" onClick={openAdd}>&#xFF0B; Pievienot</button>
+      </div>
+
+      {/* ── HEADER NAV ── */}
+      <div className="header-nav">
+        {user ? (
+          <>
+            {[
+              { id: 'properties', icon: '&#127968;', label: 'Mani &#299;pa&#353;umi', count: myProps.length },
+              { id: 'connections', icon: '&#128279;', label: 'Draugi' },
+              { id: 'chat', icon: '&#128172;', label: 'Sarunas', count: unreadCount },
+              { id: 'profile', icon: '&#128100;', label: 'Profils' },
+            ].map(item => (
+              <button
+                key={item.id}
+                className={`header-nav-btn ${activePanel === item.id ? 'active' : ''}`}
+                onClick={() => togglePanel(item.id)}
+                dangerouslySetInnerHTML={{ __html: `<span class="header-nav-icon">${item.icon}</span>${item.label}${item.count ? `<span class="header-nav-badge">${item.count}</span>` : ''}` }}
+              />
+            ))}
+          </>
+        ) : (
+          <button className="header-nav-btn" onClick={() => setShowAuth(true)}>
+            <span className="header-nav-icon">&#128100;</span>Ielogoties / Re&#291;istr&#275;ties
+          </button>
+        )}
       </div>
 
       {/* ── BODY ── */}
       <div className="map-body">
-        <Sidebar
-          myProps={myProps}
-          onOpenAuth={() => setShowAuth(true)}
-          onEditProp={openEdit}
-          onDeleteProp={p => setDeletingProp(p)}
-          onFlyTo={p => setFlyTo({ lat: p.lat, lng: p.lng, ts: Date.now() })}
-          onAddProp={openAdd}
-          friendIds={friendIds}
-          unreadCount={unreadCount}
-          onFriendsChanged={loadFriendIds}
-        />
+        {activePanel && (
+          <div className="side-panel">
+            <button className="side-panel-close" onClick={() => setActivePanel(null)}>&#10005;</button>
+            <Sidebar
+              myProps={myProps}
+              onOpenAuth={() => setShowAuth(true)}
+              onEditProp={openEdit}
+              onDeleteProp={p => setDeletingProp(p)}
+              onFlyTo={p => setFlyTo({ lat: p.lat, lng: p.lng, ts: Date.now() })}
+              onAddProp={openAdd}
+              friendIds={friendIds}
+              unreadCount={unreadCount}
+              onFriendsChanged={loadFriendIds}
+              activePanel={activePanel}
+            />
+          </div>
+        )}
 
         <div className="map-container">
           <MapContainer
