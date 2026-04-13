@@ -55,12 +55,14 @@ function MapController({ layer, flyTo }) {
 }
 
 // ── Property markers ──
-function PropertyMarkers({ properties, currentUser, onEdit, onDelete }) {
+function PropertyMarkers({ properties, currentUser, onEdit, onDelete, friendIds }) {
   return properties.map(prop => {
     if (!prop.lat || !prop.lng) return null
     const isMine = currentUser && prop.added_by === currentUser.id
+    const isFriend = !isMine && friendIds?.includes(prop.added_by)
+    const pinColor = isMine ? '#B8832A' : isFriend ? '#d4a855' : '#9B1B30'
     const icon = L.divIcon({
-      html: `<div class="custom-pin${isMine ? ' mine' : ''}" style="background:${isMine ? '#B8832A' : '#9B1B30'}"></div>`,
+      html: `<div class="custom-pin${isMine ? ' mine' : isFriend ? ' friend' : ''}" style="background:${pinColor}"></div>`,
       iconSize: [22, 22], iconAnchor: [11, 22], popupAnchor: [0, -24], className: ''
     })
     const families = prop.property_families || []
@@ -115,6 +117,8 @@ export default function MapApp() {
   const [editingProp, setEditingProp] = useState(null)
   const [showPropModal, setShowPropModal] = useState(false)
   const [deletingProp, setDeletingProp] = useState(null)
+  const [friendIds, setFriendIds] = useState([])
+  const [unreadCount, setUnreadCount] = useState(0)
 
   // Load all properties
   useEffect(() => {
@@ -136,6 +140,29 @@ export default function MapApp() {
     }
     loadMine()
   }, [user])
+
+  // Load friend IDs and unread count
+  useEffect(() => {
+    if (!user) { setFriendIds([]); setUnreadCount(0); return }
+    loadFriendIds()
+    // Unread messages count
+    supabase.from('messages').select('id', { count: 'exact' })
+      .eq('receiver_id', user.id).eq('read', false)
+      .then(({ count }) => setUnreadCount(count || 0))
+    // Realtime unread subscription
+    const channel = supabase.channel('unread-count')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `receiver_id=eq.${user.id}` },
+        () => setUnreadCount(c => c + 1)
+      ).subscribe()
+    return () => channel.unsubscribe()
+  }, [user])
+
+  async function loadFriendIds() {
+    const { data } = await supabase.from('friendships').select('requester_id, addressee_id')
+      .eq('status', 'accepted').or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`)
+    const ids = (data || []).map(f => f.requester_id === user.id ? f.addressee_id : f.requester_id)
+    setFriendIds(ids)
+  }
 
   // Search
   useEffect(() => {
@@ -271,6 +298,9 @@ export default function MapApp() {
           onDeleteProp={p => setDeletingProp(p)}
           onFlyTo={p => setFlyTo({ lat: p.lat, lng: p.lng, ts: Date.now() })}
           onAddProp={openAdd}
+          friendIds={friendIds}
+          unreadCount={unreadCount}
+          onFriendsChanged={loadFriendIds}
         />
 
         <div className="map-container">
@@ -289,6 +319,7 @@ export default function MapApp() {
               currentUser={user}
               onEdit={openEdit}
               onDelete={p => setDeletingProp(p)}
+              friendIds={friendIds}
             />
           </MapContainer>
         </div>

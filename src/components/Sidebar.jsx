@@ -1,25 +1,38 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth, useToast } from '../App'
+import FriendsPanel from './FriendsPanel'
+import ChatPanel from './ChatPanel'
 
-export default function Sidebar({ myProps, onOpenAuth, onEditProp, onDeleteProp, onFlyTo, onAddProp }) {
+export default function Sidebar({ myProps, onOpenAuth, onEditProp, onDeleteProp, onFlyTo, onAddProp, friendIds, unreadCount, onFriendsChanged }) {
   const { user } = useAuth()
   const showToast = useToast()
   const [activePanel, setActivePanel] = useState('properties')
   const [profileName, setProfileName] = useState('')
   const [profileBio, setProfileBio] = useState('')
+  const [pendingCount, setPendingCount] = useState(0)
 
   useEffect(() => {
-    if (user) {
-      setActivePanel('properties')
-      setProfileName(localStorage.getItem(`saknes_name_${user.id}`) || user.email.split('@')[0])
-      setProfileBio(localStorage.getItem(`saknes_bio_${user.id}`) || '')
-    }
+    if (!user) return
+    setActivePanel('properties')
+    // Load profile from Supabase
+    supabase.from('profiles').select('*').eq('id', user.id).single().then(({ data }) => {
+      if (data) {
+        setProfileName(data.display_name || user.email.split('@')[0])
+        setProfileBio(data.bio || '')
+      }
+    })
+    // Load pending friend request count
+    supabase.from('friendships').select('id', { count: 'exact' })
+      .eq('addressee_id', user.id).eq('status', 'pending')
+      .then(({ count }) => setPendingCount(count || 0))
   }, [user])
 
-  function saveProfile() {
-    localStorage.setItem(`saknes_name_${user.id}`, profileName)
-    localStorage.setItem(`saknes_bio_${user.id}`, profileBio)
+  async function saveProfile() {
+    const { error } = await supabase.from('profiles').upsert({
+      id: user.id, display_name: profileName, bio: profileBio, updated_at: new Date().toISOString()
+    })
+    if (error) { showToast('Error saving profile', 'error'); return }
     showToast('Profile saved', 'success')
   }
 
@@ -55,8 +68,9 @@ export default function Sidebar({ myProps, onOpenAuth, onEditProp, onDeleteProp,
         <div className="sidebar-nav">
           {[
             { id: 'properties', icon: '🏠', label: 'My Properties', count: myProps.length },
+            { id: 'connections', icon: '🔗', label: 'My Connections', count: pendingCount || undefined },
+            { id: 'chat', icon: '💬', label: 'Chat', count: unreadCount || undefined },
             { id: 'profile', icon: '👤', label: 'My Profile' },
-            { id: 'connections', icon: '🔗', label: 'My Connections' },
             { id: 'ancestors', icon: '🌳', label: 'My Ancestors' },
           ].map(item => (
             <button
@@ -98,9 +112,11 @@ export default function Sidebar({ myProps, onOpenAuth, onEditProp, onDeleteProp,
         )}
 
         {user && activePanel === 'connections' && (
-          <ComingSoon icon="🔗" title="My Connections"
-            body="See other Saknes users whose family properties overlap with yours — shared streets, shared parishes, shared history."
-            note="Coming soon — connections will be suggested automatically based on geographic proximity of properties." />
+          <FriendsPanel onFriendsChanged={() => { onFriendsChanged?.(); supabase.from('friendships').select('id', { count: 'exact' }).eq('addressee_id', user.id).eq('status', 'pending').then(({ count }) => setPendingCount(count || 0)) }} />
+        )}
+
+        {user && activePanel === 'chat' && (
+          <ChatPanel friendIds={friendIds} />
         )}
 
         {user && activePanel === 'ancestors' && (

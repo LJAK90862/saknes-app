@@ -20,7 +20,7 @@ export default function AuthModal({ onClose }) {
     } else {
       result = await supabase.auth.signUp({
         email, password,
-        options: { emailRedirectTo: 'https://app.saknes.org' }
+        options: { emailRedirectTo: 'https://app.saknes.org/' }
       })
     }
     setLoading(false)
