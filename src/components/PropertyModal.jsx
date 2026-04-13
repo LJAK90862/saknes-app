@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet'
 import L from 'leaflet'
 import { supabase } from '../lib/supabase'
-import { useAuth, useToast } from '../App'
+import { useAuth, useToast, useLang } from '../App'
 
 const LATVIA_BOUNDS = [[55.67, 20.97], [58.08, 28.24]]
 const LATVIA_CENTER = [56.87, 24.6]
@@ -25,6 +25,7 @@ function LocationPicker({ onSelect, initial }) {
 export default function PropertyModal({ prop, onClose, onSaved }) {
   const { user } = useAuth()
   const showToast = useToast()
+  const { t } = useLang()
   const isEdit = !!prop
 
   const [address, setAddress] = useState(prop?.address || '')
@@ -51,8 +52,8 @@ export default function PropertyModal({ prop, onClose, onSaved }) {
   function updateFamily(i, field, val) { setFamilies(f => f.map((fam, idx) => idx === i ? { ...fam, [field]: val } : fam)) }
 
   async function handleSave() {
-    if (!address.trim()) { showToast('Please enter an address', 'error'); return }
-    if (!lat || !lng) { showToast('Please click the map to set a location', 'error'); return }
+    if (!address.trim()) { showToast(t('toast.noAddress'), 'error'); return }
+    if (!lat || !lng) { showToast(t('toast.noLocation'), 'error'); return }
     setSaving(true)
 
     let photo_url = prop?.photo_url || null
@@ -81,7 +82,7 @@ export default function PropertyModal({ prop, onClose, onSaved }) {
 
     if (isEdit) {
       const { error } = await supabase.from('properties').update(payload).eq('id', prop.id).eq('added_by', user.id)
-      if (error) { showToast('Error saving', 'error'); setSaving(false); return }
+      if (error) { showToast(t('toast.saveError'), 'error'); setSaving(false); return }
       await supabase.from('property_families').delete().eq('property_id', prop.id)
       if (validFamilies.length) {
         await supabase.from('property_families').insert(validFamilies.map(f => ({
@@ -91,11 +92,11 @@ export default function PropertyModal({ prop, onClose, onSaved }) {
           year_to: f.year_to ? parseInt(f.year_to) : null
         })))
       }
-      showToast('✓ Updated', 'success')
+      showToast(t('toast.updated'), 'success')
       onSaved({ ...prop, ...payload, property_families: validFamilies })
     } else {
       const { data: pd, error: pe } = await supabase.from('properties').insert([{ ...payload, added_by: user.id }]).select().single()
-      if (pe) { showToast('Error saving', 'error'); setSaving(false); return }
+      if (pe) { showToast(t('toast.saveError'), 'error'); setSaving(false); return }
       if (validFamilies.length && pd?.id) {
         await supabase.from('property_families').insert(validFamilies.map(f => ({
           property_id: pd.id,
@@ -104,7 +105,7 @@ export default function PropertyModal({ prop, onClose, onSaved }) {
           year_to: f.year_to ? parseInt(f.year_to) : null
         })))
       }
-      showToast('✓ Property added!', 'success')
+      showToast(t('toast.added'), 'success')
       onSaved({ ...pd, property_families: validFamilies })
     }
     setSaving(false)
@@ -116,8 +117,8 @@ export default function PropertyModal({ prop, onClose, onSaved }) {
       <div className="modal-box">
         <div className="modal-hdr">
           <div>
-            <div className="modal-hdr-title">{isEdit ? 'Edit Property' : 'Add Your Family Property'}</div>
-            <div className="modal-hdr-sub">Pievienot ģimenes īpašumu · Add a property to the heritage map</div>
+            <div className="modal-hdr-title">{isEdit ? t('propModal.editTitle') : t('propModal.addTitle')}</div>
+            <div className="modal-hdr-sub">{t('propModal.subtitle')}</div>
           </div>
           <button className="modal-close" onClick={onClose}>✕</button>
         </div>
@@ -125,38 +126,38 @@ export default function PropertyModal({ prop, onClose, onSaved }) {
         <div className="modal-bdy">
           {/* Photo */}
           <div className="modal-section">
-            <div className="modal-section-title">Property Photo</div>
+            <div className="modal-section-title">{t('propModal.photo')}</div>
             <label className="photo-upload-area">
               <input type="file" accept="image/*" onChange={handlePhoto} style={{ display: 'none' }} />
-              <div className="photo-upload-icon">🏠</div>
-              <div className="photo-upload-text"><strong>Click to upload a photo</strong><br />Historical or recent — any image of the property</div>
+              <div className="photo-upload-icon">{'\uD83C\uDFE0'}</div>
+              <div className="photo-upload-text"><strong>{t('propModal.photoUpload')}</strong><br />{t('propModal.photoSub')}</div>
             </label>
             {photoPreview && <img className="photo-preview-img" src={photoPreview} alt="Preview" />}
           </div>
 
           {/* Details */}
           <div className="modal-section">
-            <div className="modal-section-title">Property Details</div>
+            <div className="modal-section-title">{t('propModal.details')}</div>
             <div className="field-group">
-              <label className="field-label">Address or Place Name</label>
-              <input className="field-input" type="text" placeholder="e.g. Rīgas iela 12, Cēsis / Jaunbērziņi farm, Vidzeme" value={address} onChange={e => setAddress(e.target.value)} />
+              <label className="field-label">{t('propModal.address')}</label>
+              <input className="field-input" type="text" placeholder={t('propModal.addressPlaceholder')} value={address} onChange={e => setAddress(e.target.value)} />
             </div>
             <div className="field-row">
               <div className="field-group">
-                <label className="field-label">Parish / Region</label>
-                <input className="field-input" type="text" placeholder="e.g. Cēsu pagasts" value={parish} onChange={e => setParish(e.target.value)} />
+                <label className="field-label">{t('propModal.parish')}</label>
+                <input className="field-input" type="text" placeholder={t('propModal.parishPlaceholder')} value={parish} onChange={e => setParish(e.target.value)} />
               </div>
               <div className="field-group">
-                <label className="field-label">Period (years)</label>
-                <input className="field-input" type="text" placeholder="e.g. 1890–1944" value={period} onChange={e => setPeriod(e.target.value)} />
+                <label className="field-label">{t('propModal.period')}</label>
+                <input className="field-input" type="text" placeholder={t('propModal.periodPlaceholder')} value={period} onChange={e => setPeriod(e.target.value)} />
               </div>
             </div>
           </div>
 
           {/* Families */}
           <div className="modal-section">
-            <div className="modal-section-title">Family Names</div>
-            <div className="field-hint">Add each family that lived here (with years if known)</div>
+            <div className="modal-section-title">{t('propModal.families')}</div>
+            <div className="field-hint">{t('propModal.familiesHint')}</div>
             <div className="family-rows">
               {families.map((fam, i) => (
                 <div className="family-row" key={i}>
@@ -167,25 +168,25 @@ export default function PropertyModal({ prop, onClose, onSaved }) {
                 </div>
               ))}
             </div>
-            <button className="btn-add-family" onClick={addFamily}>＋ Add another family</button>
+            <button className="btn-add-family" onClick={addFamily}>{t('propModal.addFamily')}</button>
           </div>
 
           {/* Occupation */}
           <div className="modal-section">
-            <div className="modal-section-title">Occupation / Trade</div>
-            <input className="field-input" type="text" placeholder="e.g. Farmer, Blacksmith / Zemnieks, Kalējs" value={occupation} onChange={e => setOccupation(e.target.value)} />
+            <div className="modal-section-title">{t('propModal.occupation')}</div>
+            <input className="field-input" type="text" placeholder={t('propModal.occupationPlaceholder')} value={occupation} onChange={e => setOccupation(e.target.value)} />
           </div>
 
           {/* Notes */}
           <div className="modal-section">
-            <div className="modal-section-title">Additional Notes</div>
-            <textarea className="field-input" placeholder="Any additional history, stories, or context…" value={notes} onChange={e => setNotes(e.target.value)} />
+            <div className="modal-section-title">{t('propModal.notes')}</div>
+            <textarea className="field-input" placeholder={t('propModal.notesPlaceholder')} value={notes} onChange={e => setNotes(e.target.value)} />
           </div>
 
           {/* Location */}
           <div className="modal-section">
-            <div className="modal-section-title">Location on Map</div>
-            <p className="location-hint">Click on the map below to pin the property location</p>
+            <div className="modal-section-title">{t('propModal.location')}</div>
+            <p className="location-hint">{t('propModal.locationHint')}</p>
             <div className="picker-map">
               <MapContainer
                 center={lat && lng ? [parseFloat(lat), parseFloat(lng)] : LATVIA_CENTER}
@@ -202,15 +203,15 @@ export default function PropertyModal({ prop, onClose, onSaved }) {
               </MapContainer>
             </div>
             <div className="location-coords">
-              {lat && lng ? `📍 ${lat}° N, ${lng}° E` : 'No location selected — click the map above'}
+              {lat && lng ? `\uD83D\uDCCD ${lat}\u00b0 N, ${lng}\u00b0 E` : t('propModal.noLocation')}
             </div>
           </div>
         </div>
 
         <div className="modal-ftr">
-          <button className="btn-cancel" onClick={onClose}>Cancel</button>
+          <button className="btn-cancel" onClick={onClose}>{t('propModal.cancel')}</button>
           <button className="btn-submit" onClick={handleSave} disabled={saving}>
-            {saving ? 'Saving…' : isEdit ? 'Save Changes' : 'Submit to Map'}
+            {saving ? t('propModal.saving') : isEdit ? t('propModal.save') : t('propModal.submit')}
           </button>
         </div>
       </div>
