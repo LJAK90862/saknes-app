@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from 'react'
+import { useLingui } from '@lingui/react/macro'
 import { supabase } from '../lib/supabase'
-import { useAuth, useToast, useLang } from '../App'
+import { useAuth, useToast } from '../App'
 
 export default function ChatPanel({ friendIds }) {
   const { user } = useAuth()
   const showToast = useToast()
-  const { t } = useLang()
+  const { t } = useLingui()
   const [conversations, setConversations] = useState([])
   const [activeChat, setActiveChat] = useState(null) // { userId, displayName }
   const [messages, setMessages] = useState([])
@@ -119,7 +120,7 @@ export default function ChatPanel({ friendIds }) {
       receiver_id: activeChat.userId,
       body: newMsg.trim()
     })
-    if (error) { showToast(t('chat.sendFailed'), 'error'); setSending(false); return }
+    if (error) { showToast(t`Neizdevās nosūtīt`, 'error'); setSending(false); return }
     setMessages(prev => [...prev, { sender_id: user.id, receiver_id: activeChat.userId, body: newMsg.trim(), created_at: new Date().toISOString(), read: false }])
     setNewMsg('')
     setSending(false)
@@ -140,14 +141,14 @@ export default function ChatPanel({ friendIds }) {
     return (
       <div>
         <div className="panel-header">
-          <div className="panel-title">{t('chat.title')}</div>
-          <div className="panel-subtitle">{t('chat.subtitle')}</div>
+          <div className="panel-title">{t`Sarunas`}</div>
+          <div className="panel-subtitle">{t`Rakstiet saviem draugiem`}</div>
         </div>
 
         {conversations.length === 0 ? (
           <div className="empty-state">
             <span className="emoji">{'\uD83D\uDCAC'}</span>
-            {t('chat.empty')}
+            {t`Vēl nav sarunu. Pievienojiet draugu un sāciet sarunāties par kopīgo mantojumu.`}
           </div>
         ) : (
           <div className="chat-list">
@@ -184,7 +185,7 @@ export default function ChatPanel({ friendIds }) {
       <div className="chat-messages">
         {messages.length === 0 && (
           <div style={{ textAlign: 'center', color: 'var(--ink-light)', fontSize: '.82rem', padding: '32px 16px' }}>
-            {t('chat.noMessages')}
+            {t`Vēl nav ziņu. Sakiet sveiki!`}
           </div>
         )}
         {messages.map((m, i) => (
@@ -199,13 +200,13 @@ export default function ChatPanel({ friendIds }) {
       <div className="chat-input-bar">
         <textarea
           className="chat-input"
-          placeholder={t('chat.placeholder')}
+          placeholder={t`Rakstīt ziņu…`}
           value={newMsg}
           onChange={e => setNewMsg(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage() } }}
           rows={1}
         />
-        <button className="chat-send-btn" onClick={sendMessage} disabled={sending || !newMsg.trim()}>{t('chat.send')}</button>
+        <button className="chat-send-btn" onClick={sendMessage} disabled={sending || !newMsg.trim()}>{t`Sūtīt`}</button>
       </div>
     </div>
   )

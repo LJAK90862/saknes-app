@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react'
+import { useLingui } from '@lingui/react/macro'
 import { supabase } from '../lib/supabase'
-import { useAuth, useToast, useLang } from '../App'
+import { useAuth, useToast } from '../App'
 import FriendsPanel from './FriendsPanel'
 import ChatPanel from './ChatPanel'
 
 export default function Sidebar({ myProps, onOpenAuth, onEditProp, onDeleteProp, onFlyTo, onAddProp, friendIds, unreadCount, onFriendsChanged, activePanel }) {
   const { user } = useAuth()
   const showToast = useToast()
-  const { t } = useLang()
+  const { t } = useLingui()
   const [profileName, setProfileName] = useState('')
   const [profileBio, setProfileBio] = useState('')
 
@@ -25,13 +26,13 @@ export default function Sidebar({ myProps, onOpenAuth, onEditProp, onDeleteProp,
     const { error } = await supabase.from('profiles').upsert({
       id: user.id, display_name: profileName, bio: profileBio, updated_at: new Date().toISOString()
     })
-    if (error) { showToast(t('toast.profileError'), 'error'); return }
-    showToast(t('toast.profileSaved'), 'success')
+    if (error) { showToast(t`Kļūda saglabājot`, 'error'); return }
+    showToast(t`Profils saglabāts`, 'success')
   }
 
   async function signOut() {
     await supabase.auth.signOut()
-    showToast(t('toast.signedOut'))
+    showToast(t`Izrakstījāties`)
   }
 
   const init = user ? user.email[0].toUpperCase() : '?'
@@ -40,7 +41,7 @@ export default function Sidebar({ myProps, onOpenAuth, onEditProp, onDeleteProp,
   return (
     <div className="sidebar-content">
       {activePanel === 'properties' && (
-        <PropertiesPanel props={myProps} onEdit={onEditProp} onDelete={onDeleteProp} onFly={onFlyTo} onAdd={onAddProp} t={t} />
+        <PropertiesPanel props={myProps} onEdit={onEditProp} onDelete={onDeleteProp} onFly={onFlyTo} onAdd={onAddProp} />
       )}
 
       {activePanel === 'connections' && (
@@ -56,25 +57,27 @@ export default function Sidebar({ myProps, onOpenAuth, onEditProp, onDeleteProp,
           init={init} displayName={displayName} email={user?.email}
           profileName={profileName} setProfileName={setProfileName}
           profileBio={profileBio} setProfileBio={setProfileBio}
-          onSave={saveProfile} onSignOut={signOut} t={t}
+          onSave={saveProfile} onSignOut={signOut}
         />
       )}
     </div>
   )
 }
 
-function PropertiesPanel({ props, onEdit, onDelete, onFly, onAdd, t }) {
+function PropertiesPanel({ props, onEdit, onDelete, onFly, onAdd }) {
+  const { t } = useLingui()
+
   if (!props.length) return (
     <div>
       <div className="panel-header">
-        <div className="panel-title">{t('props.title')}</div>
-        <div className="panel-subtitle">{t('props.subtitle')}</div>
+        <div className="panel-title">{t`Mani īpašumi`}</div>
+        <div className="panel-subtitle">{t`Īpašumi, ko esat pievienojis kartei`}</div>
       </div>
       <div className="empty-state">
         <span className="emoji">{'\uD83C\uDFDA'}</span>
-        {t('props.empty')}
+        {t`Vēl nav pievienotu īpašumu.`}
         <br />
-        <button className="btn-empty" onClick={onAdd}>{t('props.addFirst')}</button>
+        <button className="btn-empty" onClick={onAdd}>{t`＋ Pievienot pirmo īpašumu`}</button>
       </div>
     </div>
   )
@@ -82,8 +85,8 @@ function PropertiesPanel({ props, onEdit, onDelete, onFly, onAdd, t }) {
   return (
     <div>
       <div className="panel-header">
-        <div className="panel-title">{t('props.title')}</div>
-        <div className="panel-subtitle">{props.length} {props.length === 1 ? t('topbar.property') : t('topbar.properties')}</div>
+        <div className="panel-title">{t`Mani īpašumi`}</div>
+        <div className="panel-subtitle">{props.length} {props.length === 1 ? t`īpašums` : t`īpašumi`}</div>
       </div>
       <div className="prop-list">
         {props.map(p => (
@@ -105,9 +108,9 @@ function PropertiesPanel({ props, onEdit, onDelete, onFly, onAdd, t }) {
               </div>
             </div>
             <div className="prop-card-actions">
-              <button className="prop-card-btn" onClick={() => onEdit(p)}>{t('props.edit')}</button>
-              <button className="prop-card-btn" onClick={() => onDelete(p)}>{t('props.delete')}</button>
-              <button className="prop-card-btn" onClick={() => onFly(p)}>{t('props.view')}</button>
+              <button className="prop-card-btn" onClick={() => onEdit(p)}>{t`✎ Rediģēt`}</button>
+              <button className="prop-card-btn" onClick={() => onDelete(p)}>{t`🗑 Dzēst`}</button>
+              <button className="prop-card-btn" onClick={() => onFly(p)}>{t`🗺 Skatīt`}</button>
             </div>
           </div>
         ))}
@@ -116,23 +119,25 @@ function PropertiesPanel({ props, onEdit, onDelete, onFly, onAdd, t }) {
   )
 }
 
-function ProfilePanel({ init, displayName, email, profileName, setProfileName, profileBio, setProfileBio, onSave, onSignOut, t }) {
+function ProfilePanel({ init, displayName, email, profileName, setProfileName, profileBio, setProfileBio, onSave, onSignOut }) {
+  const { t } = useLingui()
+
   return (
     <div>
       <div className="panel-header">
-        <div className="panel-title">{t('profile.title')}</div>
-        <div className="panel-subtitle">{t('profile.subtitle')}</div>
+        <div className="panel-title">{t`Mans profils`}</div>
+        <div className="panel-subtitle">{t`Jūsu mantojuma profils`}</div>
       </div>
       <div className="profile-panel">
         <div className="profile-avatar-lg">{init}</div>
         <div className="profile-name-display">{displayName}</div>
         <div className="profile-email-display">{email}</div>
-        <label className="profile-field-label">{t('profile.nameLabel')}</label>
-        <input className="profile-input" type="text" value={profileName} onChange={e => setProfileName(e.target.value)} placeholder={t('profile.namePlaceholder')} />
-        <label className="profile-field-label">{t('profile.bioLabel')}</label>
-        <textarea className="profile-input" value={profileBio} onChange={e => setProfileBio(e.target.value)} placeholder={t('profile.bioPlaceholder')} />
-        <button className="btn-save-profile" onClick={onSave}>{t('profile.save')}</button>
-        <button className="btn-signout" onClick={onSignOut}>{t('profile.signout')}</button>
+        <label className="profile-field-label">{t`Vārds`}</label>
+        <input className="profile-input" type="text" value={profileName} onChange={e => setProfileName(e.target.value)} placeholder={t`Jūsu vārds`} />
+        <label className="profile-field-label">{t`Par jūsu saikni ar Latviju`}</label>
+        <textarea className="profile-input" value={profileBio} onChange={e => setProfileBio(e.target.value)} placeholder={t`No kura reģiona nāca jūsu ģimene? Kad viņi emigrēja?`} />
+        <button className="btn-save-profile" onClick={onSave}>{t`Saglabāt profilu`}</button>
+        <button className="btn-signout" onClick={onSignOut}>{t`Izrakstīties`}</button>
       </div>
     </div>
   )
