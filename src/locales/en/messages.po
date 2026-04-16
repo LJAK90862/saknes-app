@@ -1,0 +1,489 @@
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2026-04-16 13:19+0300\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: @lingui/cli\n"
+"Language: en\n"
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Plural-Forms: \n"
+
+#: src/pages/MapApp.jsx:249
+msgid "← Uz sākumu"
+msgstr "← Back to home"
+
+#: src/components/FriendsPanel.jsx:94
+#: src/pages/MapApp.jsx:296
+msgid "＋ Pievienot"
+msgstr "＋ Add"
+
+#: src/components/PropertyModal.jsx:172
+msgid "＋ Pievienot citu ģimeni"
+msgstr "＋ Add another family"
+
+#: src/components/FriendsPanel.jsx:122
+msgid "＋ Pievienot draugu"
+msgstr "＋ Add a Friend"
+
+#: src/components/Sidebar.jsx:80
+msgid "＋ Pievienot pirmo īpašumu"
+msgstr "＋ Add My First Property"
+
+#: src/components/Sidebar.jsx:111
+msgid "✎ Rediģēt"
+msgstr "✎ Edit"
+
+#: src/pages/MapApp.jsx:97
+msgid "✏ Rediģēt"
+msgstr "✏ Edit"
+
+#: src/components/PropertyModal.jsx:96
+msgid "✓ Atjaunināts"
+msgstr "✓ Updated"
+
+#: src/components/AuthModal.jsx:36
+msgid "✓ Ielogojāties"
+msgstr "✓ Signed in"
+
+#: src/components/PropertyModal.jsx:109
+msgid "✓ Īpašums pievienots!"
+msgstr "✓ Property added!"
+
+#: src/components/FriendsPanel.jsx:109
+msgid "✓ Pieņemt"
+msgstr "✓ Accept"
+
+#: src/components/FriendsPanel.jsx:110
+msgid "✕ Noraidīt"
+msgstr "✕ Decline"
+
+#: src/components/Sidebar.jsx:112
+msgid "🗑 Dzēst"
+msgstr "🗑 Delete"
+
+#: src/components/Sidebar.jsx:113
+msgid "🗺 Skatīt"
+msgstr "🗺 View"
+
+#: src/components/PropertyModal.jsx:143
+msgid "Adrese vai vietas nosaukums"
+msgstr "Address or Place Name"
+
+#: src/components/AddFriendModal.jsx:88
+#: src/components/PropertyModal.jsx:213
+#: src/pages/MapApp.jsx:394
+msgid "Atcelt"
+msgstr "Cancel"
+
+#: src/components/PropertyModal.jsx:189
+msgid "Atrašanās vieta kartē"
+msgstr "Location on Map"
+
+#: src/components/AddFriendModal.jsx:75
+msgid "Drauga e-pasts"
+msgstr "Friend's Email"
+
+#: src/components/FriendsPanel.jsx:66
+msgid "Drauga pieprasījums pieņemts"
+msgstr "Friend request accepted"
+
+#: src/components/FriendsPanel.jsx:94
+msgid "draugi"
+msgstr "friends"
+
+#: src/pages/MapApp.jsx:305
+msgid "Draugi"
+msgstr "Friends"
+
+#: src/components/FriendsPanel.jsx:92
+msgid "draugs"
+msgstr "friend"
+
+#: src/components/FriendsPanel.jsx:80
+msgid "Draugs noņemts"
+msgstr "Friend removed"
+
+#: src/pages/MapApp.jsx:395
+msgid "Dzēst"
+msgstr "Delete"
+
+#: src/pages/MapApp.jsx:385
+msgid "Dzēst šo īpašumu?"
+msgstr "Delete this property?"
+
+#: src/pages/MapApp.jsx:211
+msgid "Dzēsts"
+msgstr "Deleted"
+
+#: src/components/AuthModal.jsx:58
+msgid "E-pasta adrese"
+msgstr "Email Address"
+
+#: src/components/FriendsPanel.jsx:99
+msgid "Gaidošie pieprasījumi"
+msgstr "Pending Requests"
+
+#: src/components/PropertyModal.jsx:160
+msgid "Ģimenes uzvārdi"
+msgstr "Family Names"
+
+#: src/components/FriendsPanel.jsx:85
+msgid "Ielādē…"
+msgstr "Loading…"
+
+#: src/components/AuthModal.jsx:52
+#: src/components/AuthModal.jsx:76
+msgid "Ielogoties"
+msgstr "Sign In"
+
+#: src/pages/MapApp.jsx:322
+msgid "Ielogoties / Reģistrēties"
+msgstr "Sign In / Register"
+
+#: src/components/AuthModal.jsx:46
+msgid "Ielogoties, lai pievienotu un pārvaldītu savus ģimenes īpašumus"
+msgstr "Sign in to add and manage your family properties"
+
+#: src/components/PropertyModal.jsx:215
+msgid "Iesniegt kartei"
+msgstr "Submit to Map"
+
+#: src/components/PropertyModal.jsx:141
+msgid "Īpašuma detaļas"
+msgstr "Property Details"
+
+#: src/components/PropertyModal.jsx:130
+msgid "Īpašuma foto"
+msgstr "Property Photo"
+
+#: src/components/Sidebar.jsx:89
+#: src/pages/MapApp.jsx:293
+msgid "īpašumi"
+msgstr "properties"
+
+#: src/components/Sidebar.jsx:74
+msgid "Īpašumi, ko esat pievienojis kartei"
+msgstr "Properties you have added to the map"
+
+#: src/components/Sidebar.jsx:89
+#: src/pages/MapApp.jsx:293
+msgid "īpašums"
+msgstr "property"
+
+#: src/components/Sidebar.jsx:35
+msgid "Izrakstījāties"
+msgstr "Signed out"
+
+#: src/components/Sidebar.jsx:140
+msgid "Izrakstīties"
+msgstr "Sign Out"
+
+#: src/components/AuthModal.jsx:76
+msgid "Izveidot kontu"
+msgstr "Create Account"
+
+#: src/components/AddFriendModal.jsx:40
+msgid "Jau ir draugi"
+msgstr "Already friends"
+
+#: src/components/PropertyModal.jsx:184
+msgid "Jebkāda papildu vēsture vai konteksts…"
+msgstr "Any additional history, stories, or context…"
+
+#: src/components/Sidebar.jsx:129
+msgid "Jūsu mantojuma profils"
+msgstr "Your heritage profile"
+
+#: src/components/Sidebar.jsx:136
+msgid "Jūsu vārds"
+msgstr "Your name"
+
+#: src/components/AuthModal.jsx:67
+msgid "Jūsu vārds (neobligāti)"
+msgstr "Your Name (optional)"
+
+#: src/components/AuthModal.jsx:68
+msgid "Kā vēlaties būt pazīstams"
+msgstr "How you'd like to be known"
+
+#: src/components/PropertyModal.jsx:86
+#: src/components/PropertyModal.jsx:100
+#: src/components/Sidebar.jsx:29
+msgid "Kļūda saglabājot"
+msgstr "Error saving"
+
+#: src/components/AuthModal.jsx:45
+msgid "Laipni lūgti Saknes"
+msgstr "Welcome to Saknes"
+
+#: src/components/AuthModal.jsx:76
+msgid "Lūdzu gaidiet…"
+msgstr "Please wait…"
+
+#: src/pages/MapApp.jsx:215
+msgid "Lūdzu ielogoties, lai pievienotu īpašumu"
+msgstr "Please sign in to add a property"
+
+#: src/components/PropertyModal.jsx:56
+msgid "Lūdzu ievadiet adresi"
+msgstr "Please enter an address"
+
+#: src/components/AddFriendModal.jsx:15
+msgid "Lūdzu ievadiet e-pasta adresi"
+msgstr "Please enter an email address"
+
+#: src/components/AuthModal.jsx:17
+msgid "Lūdzu ievadiet e-pastu un paroli."
+msgstr "Please enter your email and password."
+
+#: src/components/PropertyModal.jsx:57
+msgid "Lūdzu nospiediet uz kartes"
+msgstr "Please click the map to set a location"
+
+#: src/pages/MapApp.jsx:290
+msgid "Mana ģimene"
+msgstr "My family"
+
+#: src/components/FriendsPanel.jsx:91
+msgid "Mani draugi"
+msgstr "My Connections"
+
+#: src/components/Sidebar.jsx:73
+#: src/components/Sidebar.jsx:88
+#: src/pages/MapApp.jsx:304
+msgid "Mani īpašumi"
+msgstr "My Properties"
+
+#: src/components/Sidebar.jsx:128
+msgid "Mans profils"
+msgstr "My Profile"
+
+#: src/components/AddFriendModal.jsx:90
+msgid "Meklē…"
+msgstr "Searching…"
+
+#: src/pages/MapApp.jsx:262
+msgid "Meklēt īpašumus…"
+msgstr "Search properties…"
+
+#: src/components/AddFriendModal.jsx:69
+msgid "Meklēt pēc e-pasta adreses"
+msgstr "Search by email address"
+
+#: src/pages/MapApp.jsx:272
+msgid "Nav atrasts"
+msgstr "No properties found"
+
+#: src/components/AddFriendModal.jsx:25
+msgid "Nav atrasts Saknes lietotājs ar šo e-pastu"
+msgstr "No Saknes user found with that email"
+
+#: src/components/PropertyModal.jsx:207
+msgid "Nav izvēlēta atrašanās vieta"
+msgstr "No location selected — click the map above"
+
+#: src/components/ChatPanel.jsx:123
+msgid "Neizdevās nosūtīt"
+msgstr "Failed to send"
+
+#: src/components/AddFriendModal.jsx:52
+msgid "Neizdevās nosūtīt pieprasījumu"
+msgstr "Failed to send request"
+
+#: src/components/AddFriendModal.jsx:16
+msgid "Nevar pievienot sevi"
+msgstr "You can't add yourself"
+
+#: src/pages/MapApp.jsx:207
+msgid "Nevarēja dzēst"
+msgstr "Could not delete"
+
+#: src/components/Sidebar.jsx:138
+msgid "No kura reģiona nāca jūsu ģimene? Kad viņi emigrēja?"
+msgstr "Which region did your family come from? When did they emigrate?"
+
+#: src/pages/MapApp.jsx:92
+msgid "Nodarbošanās"
+msgstr "Occupation"
+
+#: src/components/PropertyModal.jsx:177
+msgid "Nodarbošanās / Amats"
+msgstr "Occupation / Trade"
+
+#: src/components/PropertyModal.jsx:190
+msgid "Noklikšķiniet uz kartes, lai atzīmētu atrašanās vietu"
+msgstr "Click on the map below to pin the property location"
+
+#: src/components/PropertyModal.jsx:134
+msgid "Noklikšķiniet, lai augšupielādētu foto"
+msgstr "Click to upload a photo"
+
+#: src/components/FriendsPanel.jsx:135
+msgid "Noņemt"
+msgstr "Remove"
+
+#: src/components/AddFriendModal.jsx:90
+msgid "Nosūtīt pieprasījumu"
+msgstr "Send Request"
+
+#: src/components/PropertyModal.jsx:148
+msgid "Pagasts / Reģions"
+msgstr "Parish / Region"
+
+#: src/components/PropertyModal.jsx:183
+msgid "Papildu piezīmes"
+msgstr "Additional Notes"
+
+#: src/components/Sidebar.jsx:137
+msgid "Par jūsu saikni ar Latviju"
+msgstr "About your connection to Latvia"
+
+#: src/components/AuthModal.jsx:32
+msgid "Pārbaudiet e-pastu, lai apstiprinātu kontu, tad ielogoties."
+msgstr "Check your email to confirm your account, then sign in."
+
+#: src/components/AuthModal.jsx:62
+msgid "Parole"
+msgstr "Password"
+
+#: src/pages/MapApp.jsx:91
+msgid "Periods"
+msgstr "Period"
+
+#: src/components/PropertyModal.jsx:152
+msgid "Periods (gadi)"
+msgstr "Period (years)"
+
+#: src/components/PropertyModal.jsx:153
+msgid "piem. 1890–1944"
+msgstr "e.g. 1890–1944"
+
+#: src/components/PropertyModal.jsx:149
+msgid "piem. Cēsu pagasts"
+msgstr "e.g. Cēsu pagasts"
+
+#: src/components/PropertyModal.jsx:144
+msgid "piem. Rīgas iela 12, Cēsis"
+msgstr "e.g. Rīgas iela 12, Cēsis"
+
+#: src/components/PropertyModal.jsx:178
+msgid "piem. Zemnieks, Kalējs"
+msgstr "e.g. Farmer, Blacksmith"
+
+#: src/components/AddFriendModal.jsx:40
+msgid "Pieprasījums jau nosūtīts"
+msgstr "Request already sent"
+
+#: src/components/FriendsPanel.jsx:73
+msgid "Pieprasījums noraidīts"
+msgstr "Request declined"
+
+#: src/components/AddFriendModal.jsx:58
+msgid "Pieprasījums nosūtīts: {displayName}"
+msgstr "Friend request sent: {displayName}"
+
+#: src/components/PropertyModal.jsx:161
+msgid "Pievienojiet katru ģimeni (ar gadiem, ja zināms)"
+msgstr "Add each family that lived here (with years if known)"
+
+#: src/components/AddFriendModal.jsx:68
+msgid "Pievienot draugu"
+msgstr "Add a Friend"
+
+#: src/components/PropertyModal.jsx:121
+msgid "Pievienot ģimenes īpašumu"
+msgstr "Add Your Family Property"
+
+#: src/components/PropertyModal.jsx:122
+msgid "Pievienot ģimenes īpašumu · Add a property to the heritage map"
+msgstr "Add a property to the heritage map"
+
+#: src/pages/MapApp.jsx:307
+msgid "Profils"
+msgstr "Profile"
+
+#: src/components/Sidebar.jsx:30
+msgid "Profils saglabāts"
+msgstr "Profile saved"
+
+#: src/components/ChatPanel.jsx:145
+msgid "Rakstiet saviem draugiem"
+msgstr "Message your connections"
+
+#: src/components/ChatPanel.jsx:203
+msgid "Rakstīt ziņu…"
+msgstr "Type a message…"
+
+#: src/components/PropertyModal.jsx:121
+msgid "Rediģēt īpašumu"
+msgstr "Edit Property"
+
+#: src/components/AuthModal.jsx:53
+msgid "Reģistrēties"
+msgstr "Register"
+
+#: src/components/PropertyModal.jsx:215
+msgid "Saglabā…"
+msgstr "Saving…"
+
+#: src/components/PropertyModal.jsx:215
+msgid "Saglabāt izmaiņas"
+msgstr "Save Changes"
+
+#: src/components/Sidebar.jsx:139
+msgid "Saglabāt profilu"
+msgstr "Save Profile"
+
+#: src/components/ChatPanel.jsx:144
+#: src/pages/MapApp.jsx:306
+msgid "Sarunas"
+msgstr "Chat"
+
+#: src/pages/MapApp.jsx:391
+msgid "Šis neatgriezeniski noņems īpašumu un visus saistītos ģimenes ierakstus no kartes."
+msgstr "This will permanently remove the property and all associated family records from the map."
+
+#: src/components/ChatPanel.jsx:209
+msgid "Sūtīt"
+msgstr "Send"
+
+#: src/pages/MapApp.jsx:255
+msgid "Tagad"
+msgstr "Now"
+
+#: src/pages/MapApp.jsx:386
+msgid "To nevar atsaukt"
+msgstr "This cannot be undone"
+
+#: src/components/Sidebar.jsx:135
+msgid "Vārds"
+msgstr "Display Name"
+
+#: src/components/FriendsPanel.jsx:121
+msgid "Vēl nav draugu. Pievienojiet draugu pēc e-pasta, lai redzētu viņu ģimenes īpašumus kartē."
+msgstr "No connections yet. Add a friend by their email to see their family properties on the map."
+
+#: src/components/Sidebar.jsx:78
+msgid "Vēl nav pievienotu īpašumu."
+msgstr "No properties added yet."
+
+#: src/components/ChatPanel.jsx:151
+msgid "Vēl nav sarunu. Pievienojiet draugu un sāciet sarunāties par kopīgo mantojumu."
+msgstr "No conversations yet. Add a friend and start chatting about your shared heritage."
+
+#: src/components/ChatPanel.jsx:188
+msgid "Vēl nav ziņu. Sakiet sveiki!"
+msgstr "No messages yet. Say hello!"
+
+#: src/components/PropertyModal.jsx:134
+msgid "Vēsturiska vai jauna — jebkurš attēls"
+msgstr "Historical or recent — any image of the property"
+
+#: src/pages/MapApp.jsx:285
+msgid "Visas ģimenes"
+msgstr "All families"

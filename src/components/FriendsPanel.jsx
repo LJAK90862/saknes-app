@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react'
+import { useLingui } from '@lingui/react/macro'
 import { supabase } from '../lib/supabase'
-import { useAuth, useToast, useLang } from '../App'
+import { useAuth, useToast } from '../App'
 import AddFriendModal from './AddFriendModal'
 
 export default function FriendsPanel({ onFriendsChanged }) {
   const { user } = useAuth()
   const showToast = useToast()
-  const { t } = useLang()
+  const { t } = useLingui()
   const [friends, setFriends] = useState([])
   const [pending, setPending] = useState([])
   const [showAddModal, setShowAddModal] = useState(false)
@@ -17,7 +18,7 @@ export default function FriendsPanel({ onFriendsChanged }) {
   async function loadFriends() {
     setLoading(true)
 
-    // Pie\u0146emted friends
+    // Pieņemted friends
     const { data: accepted } = await supabase
       .from('friendships')
       .select('id, requester_id, addressee_id')
@@ -62,40 +63,40 @@ export default function FriendsPanel({ onFriendsChanged }) {
 
   async function acceptRequest(friendshipId) {
     await supabase.from('friendships').update({ status: 'accepted' }).eq('id', friendshipId)
-    showToast(t('friends.accepted'), 'success')
+    showToast(t`Drauga pieprasījums pieņemts`, 'success')
     loadFriends()
     onFriendsChanged?.()
   }
 
   async function declineRequest(friendshipId) {
     await supabase.from('friendships').delete().eq('id', friendshipId)
-    showToast(t('friends.declined'))
+    showToast(t`Pieprasījums noraidīts`)
     loadFriends()
     onFriendsChanged?.()
   }
 
   async function removeFriend(friendshipId) {
     await supabase.from('friendships').delete().eq('id', friendshipId)
-    showToast(t('friends.removed'))
+    showToast(t`Draugs noņemts`)
     loadFriends()
     onFriendsChanged?.()
   }
 
-  if (loading) return <div className="coming-soon"><span className="coming-soon-icon">{'\uD83D\uDD17'}</span><div className="coming-soon-body">{t('friends.loading')}</div></div>
+  if (loading) return <div className="coming-soon"><span className="coming-soon-icon">{'\uD83D\uDD17'}</span><div className="coming-soon-body">{t`Ielādē…`}</div></div>
 
   return (
     <div>
       <div className="panel-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <div className="panel-title">{t('friends.title')}</div>
-          <div className="panel-subtitle">{friends.length} {friends.length === 1 ? 'friend' : 'friends'}</div>
+          <div className="panel-title">{t`Mani draugi`}</div>
+          <div className="panel-subtitle">{friends.length} {friends.length === 1 ? t`draugs` : t`draugi`}</div>
         </div>
-        <button className="btn-empty" onClick={() => setShowAddModal(true)} style={{ margin: 0, padding: '5px 12px', fontSize: '.7rem' }}>{t('friends.add')}</button>
+        <button className="btn-empty" onClick={() => setShowAddModal(true)} style={{ margin: 0, padding: '5px 12px', fontSize: '.7rem' }}>{t`＋ Pievienot`}</button>
       </div>
 
       {pending.length > 0 && (
         <div style={{ padding: '10px', borderBottom: '1px solid var(--border)', background: 'var(--linen)' }}>
-          <div style={{ fontSize: '.68rem', fontWeight: 600, color: 'var(--carmine)', textTransform: 'uppercase', letterSpacing: '.08em', marginBottom: '8px' }}>Gaido\u0161ie piepras\u012bjumi</div>
+          <div style={{ fontSize: '.68rem', fontWeight: 600, color: 'var(--carmine)', textTransform: 'uppercase', letterSpacing: '.08em', marginBottom: '8px' }}>{t`Gaidošie pieprasījumi`}</div>
           {pending.map(p => (
             <div key={p.friendshipId} className="friend-card">
               <div className="friend-card-top">
@@ -105,8 +106,8 @@ export default function FriendsPanel({ onFriendsChanged }) {
                 </div>
               </div>
               <div className="prop-card-actions">
-                <button className="prop-card-btn" onClick={() => acceptRequest(p.friendshipId)} style={{ color: 'var(--carmine)', fontWeight: 600 }}>✓ Pie\u0146emt</button>
-                <button className="prop-card-btn" onClick={() => declineRequest(p.friendshipId)}>✕ Noraid\u012bt</button>
+                <button className="prop-card-btn" onClick={() => acceptRequest(p.friendshipId)} style={{ color: 'var(--carmine)', fontWeight: 600 }}>{t`✓ Pieņemt`}</button>
+                <button className="prop-card-btn" onClick={() => declineRequest(p.friendshipId)}>{t`✕ Noraidīt`}</button>
               </div>
             </div>
           ))}
@@ -116,9 +117,9 @@ export default function FriendsPanel({ onFriendsChanged }) {
       <div style={{ padding: '10px' }}>
         {friends.length === 0 && pending.length === 0 ? (
           <div className="empty-state">
-            <span className="emoji">🔗</span>
-            V&#275;l nav draugu.<br />Pievienojiet draugu p&#275;c e-pasta, lai redz&#275;tu vi&#326;u &#291;imenes &#299;pa&#353;umus kart&#275;.
-            <br /><button className="btn-empty" onClick={() => setShowAddModal(true)}>&#xFF0B; Pievienot draugu</button>
+            <span className="emoji">{'\uD83D\uDD17'}</span>
+            {t`Vēl nav draugu. Pievienojiet draugu pēc e-pasta, lai redzētu viņu ģimenes īpašumus kartē.`}
+            <br /><button className="btn-empty" onClick={() => setShowAddModal(true)}>{t`＋ Pievienot draugu`}</button>
           </div>
         ) : (
           friends.map(f => (
@@ -131,7 +132,7 @@ export default function FriendsPanel({ onFriendsChanged }) {
                 </div>
               </div>
               <div className="prop-card-actions">
-                <button className="prop-card-btn" onClick={() => removeFriend(f.friendshipId)}>No\u0146emt</button>
+                <button className="prop-card-btn" onClick={() => removeFriend(f.friendshipId)}>{t`Noņemt`}</button>
               </div>
             </div>
           ))

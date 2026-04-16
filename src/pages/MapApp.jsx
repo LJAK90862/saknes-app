@@ -1,9 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet'
 import L from 'leaflet'
+import { useLingui } from '@lingui/react/macro'
 import { supabase } from '../lib/supabase'
-import { useAuth, useToast, useLang } from '../App'
+import { useAuth, useToast } from '../App'
 import Sidebar from '../components/Sidebar'
+import LanguageSwitcher from '../components/LanguageSwitcher'
 import AuthModal from '../components/AuthModal'
 import PropertyModal from '../components/PropertyModal'
 
@@ -56,6 +58,8 @@ function MapController({ layer, flyTo }) {
 
 // ── Property markers ──
 function PropertyMarkers({ properties, currentUser, onEdit, onDelete, friendIds }) {
+  const { t } = useLingui()
+
   return properties.map(prop => {
     if (!prop.lat || !prop.lng) return null
     const isMine = currentUser && prop.added_by === currentUser.id
@@ -71,7 +75,7 @@ function PropertyMarkers({ properties, currentUser, onEdit, onDelete, friendIds 
         <Popup maxWidth={300}>
           {prop.photo_url
             ? <img className="popup-photo" src={prop.photo_url} alt="" />
-            : <div className="popup-photo-placeholder">🏠</div>
+            : <div className="popup-photo-placeholder">{'\uD83C\uDFE0'}</div>
           }
           <div className="popup-body">
             <div className="popup-address">{prop.address}{prop.parish ? ` · ${prop.parish}` : ''}</div>
@@ -84,14 +88,14 @@ function PropertyMarkers({ properties, currentUser, onEdit, onDelete, friendIds 
                 ))}
               </div>
             )}
-            {prop.period && <div className="popup-meta"><div className="popup-meta-row"><span className="popup-meta-label">Period</span>{prop.period}</div></div>}
-            {prop.occupation && <div className="popup-meta"><div className="popup-meta-row"><span className="popup-meta-label">Occupation</span>{prop.occupation}</div></div>}
+            {prop.period && <div className="popup-meta"><div className="popup-meta-row"><span className="popup-meta-label">{t`Periods`}</span>{prop.period}</div></div>}
+            {prop.occupation && <div className="popup-meta"><div className="popup-meta-row"><span className="popup-meta-label">{t`Nodarbošanās`}</span>{prop.occupation}</div></div>}
             {prop.notes && <div className="popup-notes">{prop.notes}</div>}
           </div>
           {isMine && (
             <div className="popup-edit-bar">
-              <button className="btn-popup-edit" onClick={() => onEdit(prop)}>✏ Edit</button>
-              <button className="btn-popup-delete" onClick={() => onDelete(prop)}>🗑</button>
+              <button className="btn-popup-edit" onClick={() => onEdit(prop)}>{t`✏ Rediģēt`}</button>
+              <button className="btn-popup-delete" onClick={() => onDelete(prop)}>{'\uD83D\uDDD1'}</button>
             </div>
           )}
         </Popup>
@@ -103,7 +107,7 @@ function PropertyMarkers({ properties, currentUser, onEdit, onDelete, friendIds 
 export default function MapApp() {
   const { user } = useAuth()
   const showToast = useToast()
-  const { lang, toggleLang, t } = useLang()
+  const { t } = useLingui()
 
   const [allProps, setAllProps] = useState([])
   const [myProps, setMyProps] = useState([])
@@ -200,15 +204,15 @@ export default function MapApp() {
   async function handleDelete(prop) {
     await supabase.from('property_families').delete().eq('property_id', prop.id)
     const { error } = await supabase.from('properties').delete().eq('id', prop.id).eq('added_by', user.id)
-    if (error) { showToast(t('toast.deleteError'), 'error'); return }
+    if (error) { showToast(t`Nevarēja dzēst`, 'error'); return }
     setAllProps(prev => prev.filter(p => p.id !== prop.id))
     setMyProps(prev => prev.filter(p => p.id !== prop.id))
     setDeletingProp(null)
-    showToast(t('toast.deleted'), 'success')
+    showToast(t`Dzēsts`, 'success')
   }
 
   function openAdd() {
-    if (!user) { setShowAuth(true); showToast(t('toast.signInFirst'), 'error'); return }
+    if (!user) { setShowAuth(true); showToast(t`Lūdzu ielogoties, lai pievienotu īpašumu`, 'error'); return }
     setEditingProp(null)
     setShowPropModal(true)
   }
@@ -242,20 +246,20 @@ export default function MapApp() {
           <img src="/saknes-logo.jpg" alt="Saknes" style={{ height: 32, width: 'auto' }} />
           <div>
             <div className="topbar-home-text">Saknes</div>
-            <div className="topbar-home-back">&larr; Uz s&#257;kumu</div>
+            <div className="topbar-home-back">{t`← Uz sākumu`}</div>
           </div>
         </a>
 
         <div className="layer-toggle">
           <button className={`layer-btn ${layer === 'wig' ? 'active' : ''}`} onClick={() => setLayer('wig')}>1935</button>
-          <button className={`layer-btn ${layer === 'modern' ? 'active' : ''}`} onClick={() => setLayer('modern')}>{t('topbar.now')}</button>
+          <button className={`layer-btn ${layer === 'modern' ? 'active' : ''}`} onClick={() => setLayer('modern')}>{t`Tagad`}</button>
         </div>
 
         <div className="search-wrap">
           <input
             className="search-input"
             type="text"
-            placeholder={t('topbar.search')}
+            placeholder={t`Meklēt īpašumus…`}
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             onBlur={() => setTimeout(() => setShowSearch(false), 180)}
@@ -265,7 +269,7 @@ export default function MapApp() {
           {showSearch && (
             <div className="search-drop">
               {searchResults.length === 0
-                ? <div className="search-no-results">{t('topbar.searchEmpty')}</div>
+                ? <div className="search-no-results">{t`Nav atrasts`}</div>
                 : searchResults.map(p => (
                   <div key={p.id} className="search-item" onMouseDown={() => handleSearchSelect(p)}>
                     <div className="search-item-addr">{p.address}</div>
@@ -278,18 +282,18 @@ export default function MapApp() {
         </div>
 
         <div className="fam-toggle-wrap">
-          <span className="fam-toggle-label">{t('topbar.allFamilies')}</span>
+          <span className="fam-toggle-label">{t`Visas ģimenes`}</span>
           <label className="toggle-sw">
             <input type="checkbox" checked={showMineOnly} disabled={!user} onChange={e => setShowMineOnly(e.target.checked)} />
             <span className="toggle-track" />
           </label>
-          <span className="fam-toggle-label mine">{t('topbar.myFamily')}</span>
+          <span className="fam-toggle-label mine">{t`Mana ģimene`}</span>
         </div>
 
-        <span className="pin-count">{displayedProps.length} {displayedProps.length === 1 ? t('topbar.property') : t('topbar.properties')}</span>
+        <span className="pin-count">{displayedProps.length} {displayedProps.length === 1 ? t`īpašums` : t`īpašumi`}</span>
         <div className="topbar-spacer" />
-        <button className="lang-toggle" onClick={toggleLang}>{lang === 'lv' ? 'EN' : 'LV'}</button>
-        <button className="btn-add" onClick={openAdd}>{t('topbar.add')}</button>
+        <LanguageSwitcher />
+        <button className="btn-add" onClick={openAdd}>{t`＋ Pievienot`}</button>
       </div>
 
       {/* ── HEADER NAV ── */}
@@ -297,10 +301,10 @@ export default function MapApp() {
         {user ? (
           <>
             {[
-              { id: 'properties', icon: '\uD83C\uDFE0', label: t('nav.properties'), count: myProps.length },
-              { id: 'connections', icon: '\uD83D\uDD17', label: t('nav.friends') },
-              { id: 'chat', icon: '\uD83D\uDCAC', label: t('nav.chat'), count: unreadCount },
-              { id: 'profile', icon: '\uD83D\uDC64', label: t('nav.profile') },
+              { id: 'properties', icon: '\uD83C\uDFE0', label: t`Mani īpašumi`, count: myProps.length },
+              { id: 'connections', icon: '\uD83D\uDD17', label: t`Draugi` },
+              { id: 'chat', icon: '\uD83D\uDCAC', label: t`Sarunas`, count: unreadCount },
+              { id: 'profile', icon: '\uD83D\uDC64', label: t`Profils` },
             ].map(item => (
               <button
                 key={item.id}
@@ -315,7 +319,7 @@ export default function MapApp() {
           </>
         ) : (
           <button className="header-nav-btn" onClick={() => setShowAuth(true)}>
-            <span className="header-nav-icon">{'\uD83D\uDC64'}</span>{t('nav.signin')}
+            <span className="header-nav-icon">{'\uD83D\uDC64'}</span>{t`Ielogoties / Reģistrēties`}
           </button>
         )}
       </div>
@@ -378,17 +382,17 @@ export default function MapApp() {
           <div className="modal-box" style={{ maxWidth: 340 }}>
             <div className="modal-hdr">
               <div>
-                <div className="modal-hdr-title">{t('delete.title')}</div>
-                <div className="modal-hdr-sub">{t('delete.subtitle')}</div>
+                <div className="modal-hdr-title">{t`Dzēst šo īpašumu?`}</div>
+                <div className="modal-hdr-sub">{t`To nevar atsaukt`}</div>
               </div>
               <button className="modal-close" onClick={() => setDeletingProp(null)}>✕</button>
             </div>
             <div className="modal-bdy">
-              <p className="confirm-body">{t('delete.body')}</p>
+              <p className="confirm-body">{t`Šis neatgriezeniski noņems īpašumu un visus saistītos ģimenes ierakstus no kartes.`}</p>
             </div>
             <div className="modal-ftr">
-              <button className="btn-cancel" onClick={() => setDeletingProp(null)}>{t('delete.cancel')}</button>
-              <button className="btn-delete" onClick={() => handleDelete(deletingProp)}>{t('delete.confirm')}</button>
+              <button className="btn-cancel" onClick={() => setDeletingProp(null)}>{t`Atcelt`}</button>
+              <button className="btn-delete" onClick={() => handleDelete(deletingProp)}>{t`Dzēst`}</button>
             </div>
           </div>
         </div>

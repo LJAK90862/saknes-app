@@ -1,18 +1,19 @@
 import { useState } from 'react'
+import { useLingui } from '@lingui/react/macro'
 import { supabase } from '../lib/supabase'
-import { useAuth, useToast, useLang } from '../App'
+import { useAuth, useToast } from '../App'
 
 export default function AddFriendModal({ onClose, onSent }) {
   const { user } = useAuth()
   const showToast = useToast()
-  const { t } = useLang()
+  const { t } = useLingui()
   const [email, setEmail] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
   async function handleSubmit() {
-    if (!email.trim()) { setError(t('addFriend.noEmail')); return }
-    if (email.trim().toLowerCase() === user.email.toLowerCase()) { setError(t('addFriend.self')); return }
+    if (!email.trim()) { setError(t`Lūdzu ievadiet e-pasta adresi`); return }
+    if (email.trim().toLowerCase() === user.email.toLowerCase()) { setError(t`Nevar pievienot sevi`); return }
 
     setLoading(true)
     setError('')
@@ -21,7 +22,7 @@ export default function AddFriendModal({ onClose, onSent }) {
     const { data: found, error: rpcError } = await supabase.rpc('find_user_by_email', { lookup_email: email.trim().toLowerCase() })
 
     if (rpcError || !found || found.length === 0) {
-      setError(t('addFriend.notFound'))
+      setError(t`Nav atrasts Saknes lietotājs ar šo e-pastu`)
       setLoading(false)
       return
     }
@@ -36,7 +37,7 @@ export default function AddFriendModal({ onClose, onSent }) {
 
     if (existing && existing.length > 0) {
       const status = existing[0].status
-      setError(status === 'accepted' ? t('addFriend.already') : status === 'pending' ? t('addFriend.pending') : t('addFriend.pending'))
+      setError(status === 'accepted' ? t`Jau ir draugi` : t`Pieprasījums jau nosūtīts`)
       setLoading(false)
       return
     }
@@ -48,12 +49,13 @@ export default function AddFriendModal({ onClose, onSent }) {
     })
 
     if (insertError) {
-      setError(t('addFriend.failed'))
+      setError(t`Neizdevās nosūtīt pieprasījumu`)
       setLoading(false)
       return
     }
 
-    showToast(`${t('addFriend.sent')}: ${found[0].display_name || email}`, 'success')
+    const displayName = found[0].display_name || email
+    showToast(t`Pieprasījums nosūtīts: ${displayName}`, 'success')
     setLoading(false)
     onSent()
   }
@@ -63,14 +65,14 @@ export default function AddFriendModal({ onClose, onSent }) {
       <div className="modal-box" style={{ maxWidth: 390 }}>
         <div className="modal-hdr">
           <div>
-            <div className="modal-hdr-title">{t('addFriend.title')}</div>
-            <div className="modal-hdr-sub">{t('addFriend.subtitle')}</div>
+            <div className="modal-hdr-title">{t`Pievienot draugu`}</div>
+            <div className="modal-hdr-sub">{t`Meklēt pēc e-pasta adreses`}</div>
           </div>
           <button className="modal-close" onClick={onClose}>✕</button>
         </div>
         <div className="modal-bdy">
           <div className="auth-field">
-            <label className="auth-label">{t('addFriend.label')}</label>
+            <label className="auth-label">{t`Drauga e-pasts`}</label>
             <input
               className="auth-input"
               type="email"
@@ -83,9 +85,9 @@ export default function AddFriendModal({ onClose, onSent }) {
           {error && <div className="auth-error">{error}</div>}
         </div>
         <div className="modal-ftr">
-          <button className="btn-cancel" onClick={onClose}>{t('addFriend.cancel')}</button>
+          <button className="btn-cancel" onClick={onClose}>{t`Atcelt`}</button>
           <button className="btn-submit" onClick={handleSubmit} disabled={loading}>
-            {loading ? t('addFriend.searching') : t('addFriend.send')}
+            {loading ? t`Meklē…` : t`Nosūtīt pieprasījumu`}
           </button>
         </div>
       </div>
